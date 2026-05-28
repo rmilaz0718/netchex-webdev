@@ -1,0 +1,433 @@
+/* ============================================================
+   NETCHEX DESIGN SYSTEM — Colors & Typography
+   MUI-based component library with Netchex brand overrides
+   Primary font: Inter | Primary blue: #1e40af
+   ============================================================ */
+
+/* ─── SELF-HOSTED BRAND FONTS ───────────────────────────────── */
+
+/* Inter Variable (preferred — single file covers all weights) */
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/InterVariable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter static fallbacks */
+@font-face { font-family: 'Inter'; src: url('fonts/Inter-Thin.ttf') format('truetype');       font-weight: 100; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter-ExtraLight.ttf') format('truetype'); font-weight: 200; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter-Light.ttf') format('truetype');      font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter-Regular.ttf') format('truetype');    font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter-Medium.ttf') format('truetype');     font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter-SemiBold.ttf') format('truetype');   font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter-Bold.ttf') format('truetype');       font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter-ExtraBold.ttf') format('truetype');  font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter-Black.ttf') format('truetype');      font-weight: 900; font-style: normal; font-display: swap; }
+
+/* Bodoni 72 Small Caps — display / headline accent */
+@font-face {
+  font-family: 'Bodoni 72 Smallcaps';
+  src: url('fonts/Bodoni_72_Smallcaps_Book.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Bodoni Ornaments — decorative glyphs */
+@font-face {
+  font-family: 'Bodoni Ornaments';
+  src: url('fonts/Bodoni_Ornaments.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Bradley Hand Bold — handwritten accent */
+@font-face {
+  font-family: 'Bradley Hand';
+  src: url('fonts/Bradley_Hand_Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─── COLOR TOKENS ─────────────────────────────────────────── */
+:root {
+
+  /* ─── BRAND LOGO GREEN (logo only — not UI) ─────────────── */
+  --color-logo-green:        #6abf5e;  /* the Netchex logomark green */
+
+  /* ─── 2025 COLOR PALETTE ─────────────────────────────────── */
+
+  /* Primary Blue */
+  --color-primary-50:        #eff6ff;
+  --color-primary-100:       #dbeafe;
+  --color-primary-200:       #bfdbfe;
+  --color-primary-300:       #93c5fd;
+  --color-primary-400:       #60a5fa;
+  --color-primary-500:       #3b82f6;
+  --color-primary-600:       #2563eb;  /* PRIMARY */
+  --color-primary-700:       #1d4ed8;
+  --color-primary-800:       #1e40af;
+  --color-primary-900:       #1e3a8a;
+  --color-primary-main:      #2563eb;  /* 600 = PRIMARY per palette */
+  --color-primary-dark:      #1d4ed8;
+  --color-primary-light:     #dbeafe;
+  --color-primary-contrast:  #ffffff;
+
+  /* Secondary Teal */
+  --color-teal-50:           #f0fdfa;
+  --color-teal-100:          #ccfbf1;
+  --color-teal-200:          #99f6e4;
+  --color-teal-300:          #5eead4;
+  --color-teal-400:          #2dd4bf;
+  --color-teal-500:          #14b8a6;
+  --color-teal-600:          #0d9488;
+  --color-teal-700:          #0f766e;
+  --color-teal-800:          #115e59;
+  --color-teal-900:          #134e4a;
+  --color-teal-main:         #0d9488;  /* 600 */
+  --color-secondary-main:    #0d9488;
+  --color-secondary-dark:    #0f766e;
+  --color-secondary-light:   #ccfbf1;
+  --color-secondary-contrast:#ffffff;
+
+  /* Error Red */
+  --color-error-50:          #fef2f2;
+  --color-error-100:         #fee2e2;  /* LIGHT FILL */
+  --color-error-200:         #fecaca;
+  --color-error-300:         #fca5a5;
+  --color-error-400:         #f87171;
+  --color-error-500:         #ef4444;
+  --color-error-600:         #dc2626;  /* MAIN */
+  --color-error-700:         #b91c1c;
+  --color-error-800:         #991b1b;
+  --color-error-900:         #7f1d1d;
+  --color-error-main:        #dc2626;
+  --color-error-dark:        #b91c1c;
+  --color-error-light:       #fee2e2;
+  --color-error-bg:          #fee2e2;
+  --color-error-text:        #dc2626;
+
+  /* Warning Yellow */
+  --color-warning-50:        #fefce8;
+  --color-warning-100:       #fef9c3;  /* LIGHT FILL */
+  --color-warning-200:       #fef08a;
+  --color-warning-300:       #fde047;
+  --color-warning-400:       #facc15;
+  --color-warning-500:       #eab308;  /* MAIN */
+  --color-warning-600:       #ca8a04;
+  --color-warning-700:       #a16207;
+  --color-warning-800:       #854d0e;
+  --color-warning-900:       #713f12;
+  --color-warning-main:      #eab308;
+  --color-warning-dark:      #ca8a04;
+  --color-warning-light:     #fef9c3;
+  --color-warning-bg:        #fef9c3;
+  --color-warning-text:      #eab308;
+
+  /* Success Green */
+  --color-success-50:        #f0fdf4;
+  --color-success-100:       #dcfce7;  /* LIGHT FILL */
+  --color-success-200:       #bbf7d0;
+  --color-success-300:       #86efac;
+  --color-success-400:       #4ade80;
+  --color-success-500:       #22c55e;
+  --color-success-600:       #16a34a;  /* MAIN */
+  --color-success-700:       #15803d;
+  --color-success-800:       #166534;
+  --color-success-900:       #14532d;
+  --color-success-main:      #16a34a;
+  --color-success-dark:      #15803d;
+  --color-success-light:     #dcfce7;
+  --color-success-bg:        #dcfce7;
+  --color-success-text:      #15803d;
+
+  /* Neutral Gray */
+  --color-gray-50:           #f9fafb;  /* LIGHT FILL */
+  --color-gray-100:          #f3f4f6;
+  --color-gray-200:          #e5e7eb;
+  --color-gray-300:          #d1d5db;
+  --color-gray-400:          #9ca3af;
+  --color-gray-500:          #647488;  /* MAIN per palette */
+  --color-gray-600:          #475569;
+  --color-gray-700:          #334155;
+  --color-gray-800:          #1e293b;
+  --color-gray-900:          #0f172a;
+
+  /* Tertiary 1 — Indigo */
+  --color-indigo-50:         #f5f3ff;
+  --color-indigo-100:        #ede9fe;
+  --color-indigo-200:        #c7d2fe;
+  --color-indigo-300:        #a5b4fc;
+  --color-indigo-400:        #818cf8;
+  --color-indigo-500:        #6366f1;
+  --color-indigo-600:        #4f46e5;  /* MAIN */
+  --color-indigo-700:        #4338ca;
+  --color-indigo-800:        #3730a3;
+  --color-indigo-900:        #312e81;
+  --color-indigo-main:       #4f46e5;
+
+  /* Tertiary 2 — Orange */
+  --color-orange-50:         #fff7ed;
+  --color-orange-100:        #ffedd5;
+  --color-orange-200:        #fed7aa;
+  --color-orange-300:        #fdba74;
+  --color-orange-400:        #fb923c;
+  --color-orange-500:        #f97316;
+  --color-orange-600:        #ea580c;  /* MAIN */
+  --color-orange-700:        #c2410c;
+  --color-orange-800:        #9a3412;
+  --color-orange-900:        #7c2d12;
+  --color-orange-main:       #ea580c;
+
+  /* ─── SEMANTIC ALIASES ───────────────────────────────────── */
+
+  /* Text */
+  --color-text-primary:      #1e293b;
+  --color-text-secondary:    #647488;
+  --color-text-disabled:     #9ca3af;
+  --color-text-hint:         #9ca3af;
+  --color-text-inverse:      #ffffff;
+
+  /* Backgrounds */
+  --color-bg-app:            #f9fafb;
+  --color-bg-surface:        #ffffff;
+  --color-bg-sidebar:        #ffffff;
+  --color-bg-hover:          #f3f4f6;
+  --color-bg-selected:       #eff6ff;
+  --color-bg-overlay:        rgba(0, 0, 0, 0.5);
+
+  /* Borders */
+  --color-border:            #e5e7eb;
+  --color-border-light:      #f3f4f6;
+  --color-border-focus:      #2563eb;
+  --color-divider:           #f3f4f6;
+
+  /* Status: Neutral/Inactive */
+  --color-inactive-bg:       #f3f4f6;
+  --color-inactive-text:     #647488;
+
+  /* Info (primary blue) */
+  --color-info-main:         #3b82f6;
+  --color-info-dark:         #2563eb;
+  --color-info-light:        #dbeafe;
+  --color-info-bg:           #dbeafe;
+  --color-info-text:         #1d4ed8;
+
+  /* Nav */
+  --color-nav-active-border: #2563eb;
+  --color-nav-active-bg:     #eff6ff;
+
+  /* Toggle */
+  --color-toggle-on:         #2563eb;
+  --color-toggle-off:        #9ca3af;
+
+
+  /* ─── TYPOGRAPHY TOKENS ──────────────────────────────────── */
+
+  --font-family-base:        'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-display:     'Bodoni 72 Smallcaps', 'Georgia', serif;
+  --font-family-ornaments:   'Bodoni Ornaments', serif;
+  --font-family-handwritten: 'Bradley Hand', 'Segoe Script', cursive;
+  --font-family-mono:        'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+  /* Font Sizes */
+  --font-size-xs:            11px;
+  --font-size-sm:            12px;
+  --font-size-base:          14px;
+  --font-size-md:            16px;
+  --font-size-lg:            18px;
+  --font-size-xl:            20px;
+  --font-size-2xl:           23px;
+  --font-size-3xl:           30px;
+
+  /* Font Weights */
+  --font-weight-regular:     400;
+  --font-weight-medium:      500;
+  --font-weight-semibold:    600;
+  --font-weight-bold:        700;
+
+  /* Line Heights */
+  --line-height-tight:       1.2;
+  --line-height-snug:        1.35;
+  --line-height-normal:      1.5;
+  --line-height-relaxed:     1.6;
+
+  /* Letter Spacing */
+  --letter-spacing-tight:    -0.01em;
+  --letter-spacing-normal:   0;
+  --letter-spacing-wide:     0.02em;
+  --letter-spacing-wider:    0.08em;  /* overline */
+
+
+  /* ─── SPACING TOKENS ─────────────────────────────────────── */
+  /* Base unit: 4px */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-7:   28px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+
+  /* Layout */
+  --sidebar-width:           220px;
+  --sidebar-collapsed-width: 56px;
+  --topbar-height:           52px;
+  --content-padding:         24px;
+  --card-padding:            20px;
+  --form-row-gap:            16px;
+  --section-gap:             28px;
+
+
+  /* ─── BORDER RADIUS ──────────────────────────────────────── */
+  --radius-sm:     2px;
+  --radius-base:   4px;
+  --radius-md:     6px;
+  --radius-lg:     8px;
+  --radius-xl:     12px;
+  --radius-pill:   999px;
+  --radius-circle: 50%;
+
+
+  /* ─── SHADOWS / ELEVATION ────────────────────────────────── */
+  --shadow-0:   none;
+  --shadow-1:   0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-2:   0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-3:   0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-4:   0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+
+
+  /* ─── TRANSITIONS ────────────────────────────────────────── */
+  --transition-fast:   150ms ease-in-out;
+  --transition-base:   200ms ease-in-out;
+  --transition-slow:   300ms ease-in-out;
+  --transition-drawer: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+/* ─── SEMANTIC TYPE STYLES ──────────────────────────────────── */
+
+h1, .h1 {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+}
+
+h2, .h2 {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-primary);
+}
+
+h3, .h3 {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-primary);
+}
+
+h4, .h4 {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+h5, .h5 {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+h6, .h6 {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+.subtitle1 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+.subtitle2 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+p, .body1 {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-primary);
+}
+
+.body2 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-primary);
+}
+
+.caption {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.overline {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-wider);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.text-secondary { color: var(--color-text-secondary); }
+.text-disabled  { color: var(--color-text-disabled); }
+.text-error     { color: var(--color-error-main); }
+.text-success   { color: var(--color-success-main); }
+.text-warning   { color: var(--color-warning-main); }
+.text-primary-color { color: var(--color-primary-main); }
+
+
+/* ─── BASE RESET ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

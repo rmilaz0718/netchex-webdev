@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netchex · Product Discovery</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="fa7.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body, #root { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+  body { font-family: 'Inter', sans-serif; background: #f9fafb; color: #111827; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+  button { font-family: 'Inter', sans-serif; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="NavSidebar.jsx"></script>
+<script type="text/babel" src="TopBar.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="products-data.jsx"></script>
+<script type="text/babel" src="ProductGraphics.jsx"></script>
+<script type="text/babel" src="ProductDiscovery.jsx"></script>
+
+<script type="text/babel">
+function App() {
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [activeNav, setActiveNav] = React.useState('product-discovery');
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#f9fafb' }} data-screen-label="Product Discovery">
+      {/* Top bar */}
+      <TopBar onToggleSidebar={() => setSidebarCollapsed(c => !c)} />
+
+      {/* Sub-header: logo + page title */}
+      <div style={{
+        height: 56, background: '#fff', borderBottom: '1px solid #e5e7eb',
+        display: 'flex', alignItems: 'center', padding: '0 24px', gap: 14, flexShrink: 0,
+      }}>
+        <img src="assets/netchex-logo-mark.png" alt="Netchex" style={{ height: 30, width: 'auto' }} />
+        <div style={{ width: 1, height: 28, background: '#d1d5db' }}></div>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1 }}>What's New</div>
+          <div style={{ fontSize: 19, fontWeight: 700, color: '#111827', letterSpacing: '-0.01em', marginTop: 3 }}>Product Discovery</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <NavSidebar
+          activeId={activeNav}
+          onNavigate={setActiveNav}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(c => !c)}
+        />
+        <ProductDiscovery />
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>

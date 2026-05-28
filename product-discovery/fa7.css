@@ -1,0 +1,203 @@
+/* ============================================================
+   FONT AWESOME 7 PRO — Self-hosted @font-face definitions
+   Strategy: use FA6 CDN for class→unicode CSS map, override
+   font-face to render with FA7 Pro fonts for all styles.
+   Include fa7.css AFTER the FA6 CDN link to override fonts.
+   ============================================================ */
+
+/* Override FA Regular → FA7 Pro Regular */
+@font-face {
+  font-family: 'Font Awesome 6 Pro';
+  src: url('fonts/fa7-pro-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Override FA Light → FA7 Pro Light */
+@font-face {
+  font-family: 'Font Awesome 6 Pro';
+  src: url('fonts/fa7-pro-light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Override FA Solid → FA7 Pro Solid */
+@font-face {
+  font-family: 'Font Awesome 6 Pro';
+  src: url('fonts/fa7-pro-solid.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Override FA Thin → FA7 Pro Thin */
+@font-face {
+  font-family: 'Font Awesome 6 Pro';
+  src: url('fonts/fa7-pro-thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Override FA Free (used by CDN) → FA7 Pro Regular */
+@font-face {
+  font-family: 'Font Awesome 6 Free';
+  src: url('fonts/fa7-pro-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Font Awesome 6 Free';
+  src: url('fonts/fa7-pro-solid.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Sharp variants */
+@font-face {
+  font-family: 'Font Awesome 7 Sharp';
+  src: url('fonts/fa7-sharp-regular.otf') format('opentype');
+  font-weight: 400; font-style: normal; font-display: block;
+}
+@font-face {
+  font-family: 'Font Awesome 7 Sharp';
+  src: url('fonts/fa7-sharp-solid.otf') format('opentype');
+  font-weight: 900; font-style: normal; font-display: block;
+}
+@font-face {
+  font-family: 'Font Awesome 7 Sharp';
+  src: url('fonts/fa7-sharp-thin.otf') format('opentype');
+  font-weight: 100; font-style: normal; font-display: block;
+}
+
+/* Duotone */
+@font-face {
+  font-family: 'Font Awesome 7 Duotone';
+  src: url('fonts/fa7-duotone-thin.otf') format('opentype');
+  font-weight: 100; font-style: normal; font-display: block;
+}
+@font-face {
+  font-family: 'Font Awesome 7 Sharp Duotone';
+  src: url('fonts/fa7-sharp-duotone-light.otf') format('opentype');
+  font-weight: 300; font-style: normal; font-display: block;
+}
+
+/* Sharp convenience classes */
+.fa-sharp.fa-solid   { font-family: 'Font Awesome 7 Sharp' !important; font-weight: 900; }
+.fa-sharp.fa-regular { font-family: 'Font Awesome 7 Sharp' !important; font-weight: 400; }
+.fa-sharp.fa-thin    { font-family: 'Font Awesome 7 Sharp' !important; font-weight: 100; }
+.fa-duotone.fa-thin  { font-family: 'Font Awesome 7 Duotone' !important; font-weight: 100; }
+
+
+/* FA7 Pro Regular */
+@font-face {
+  font-family: 'Font Awesome 7 Pro';
+  src: url('fonts/fa7-pro-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+/* FA7 Pro Light */
+@font-face {
+  font-family: 'Font Awesome 7 Pro';
+  src: url('fonts/fa7-pro-light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+
+/* FA7 Pro Solid */
+@font-face {
+  font-family: 'Font Awesome 7 Pro';
+  src: url('fonts/fa7-pro-solid.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
+
+/* FA7 Pro Thin */
+@font-face {
+  font-family: 'Font Awesome 7 Pro';
+  src: url('fonts/fa7-pro-thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: block;
+}
+
+/* FA7 Sharp Regular */
+@font-face {
+  font-family: 'Font Awesome 7 Sharp';
+  src: url('fonts/fa7-sharp-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+/* FA7 Sharp Solid */
+@font-face {
+  font-family: 'Font Awesome 7 Sharp';
+  src: url('fonts/fa7-sharp-solid.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
+
+/* FA7 Sharp Thin */
+@font-face {
+  font-family: 'Font Awesome 7 Sharp';
+  src: url('fonts/fa7-sharp-thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: block;
+}
+
+/* FA7 Duotone Thin */
+@font-face {
+  font-family: 'Font Awesome 7 Duotone';
+  src: url('fonts/fa7-duotone-thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: block;
+}
+
+/* FA7 Sharp Duotone Light */
+@font-face {
+  font-family: 'Font Awesome 7 Sharp Duotone';
+  src: url('fonts/fa7-sharp-duotone-light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+
+/* ── Base icon class ── */
+.fa-icon,
+.fa-regular, .fa-light, .fa-solid, .fa-thin,
+.fa-duotone, .fa-sharp {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-rendering: auto;
+  speak: never;
+}
+
+.fa-regular { font-family: 'Font Awesome 7 Pro'; font-weight: 400; }
+.fa-light   { font-family: 'Font Awesome 7 Pro'; font-weight: 300; }
+.fa-solid   { font-family: 'Font Awesome 7 Pro'; font-weight: 900; }
+.fa-thin    { font-family: 'Font Awesome 7 Pro'; font-weight: 100; }
+
+/* Sharp variants */
+.fa-sharp.fa-regular { font-family: 'Font Awesome 7 Sharp'; font-weight: 400; }
+.fa-sharp.fa-solid   { font-family: 'Font Awesome 7 Sharp'; font-weight: 900; }
+.fa-sharp.fa-thin    { font-family: 'Font Awesome 7 Sharp'; font-weight: 100; }
+
+/* Duotone — uses secondary layer via ::after */
+.fa-duotone.fa-thin  { font-family: 'Font Awesome 7 Duotone'; font-weight: 100; }
+.fa-duotone.fa-light { font-family: 'Font Awesome 7 Sharp Duotone'; font-weight: 300; }
