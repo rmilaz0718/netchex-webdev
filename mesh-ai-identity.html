@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mesh.ai — Identity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:    #F4F5FB;
+  --mid:   #EBEDF6;
+  --rule:  rgba(10,12,28,0.08);
+  --white: #0A0C1C;
+  --dim:   rgba(10,12,28,0.38);
+  --dim2:  rgba(10,12,28,0.55);
+  --blue:  #2B51D6;
+}
+
+/* ── DARK SECTION overrides (flips all vars back to dark values) ── */
+.dark-sec {
+  background: #07081A;
+  --rule:  rgba(255,255,255,0.07);
+  --white: #EDF0FA;
+  --dim:   rgba(237,240,250,0.38);
+  --dim2:  rgba(237,240,250,0.55);
+  --blue:  #3860EE;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── BAR ─────────────────────────────────────── */
+.bar {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 50px; padding: 0 60px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--dim);
+}
+
+/* ── HERO (animated) ─────────────────────────── */
+.hero {
+  position: relative;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: calc(100vh - 50px);
+  padding: 80px 60px;
+  overflow: hidden;
+}
+.lockup { display: flex; align-items: center; gap: 8px; }
+.mark-box { flex: 0 0 auto; line-height: 0; }
+.wm {
+  font-size: 96px; font-weight: 700; letter-spacing: -0.044em;
+  line-height: 1; color: var(--white); white-space: nowrap; user-select: none;
+}
+.wm .a { color: var(--blue); }
+
+/* hero wordmark — revealed by the animation finale */
+.hero-wm { opacity: 0; }
+.hero-wm.revealed { opacity: 1; animation: wmIn .82s cubic-bezier(.2,.85,.25,1) forwards; }
+@keyframes wmIn {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.replay {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 10px 18px; border-radius: 100px;
+  background: transparent; border: 1px solid var(--rule);
+  color: var(--dim2); font-family: inherit; font-size: 11px;
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  cursor: pointer; transition: border-color .2s, color .2s;
+}
+.replay:hover { border-color: rgba(10,12,28,0.26); color: var(--white); }
+.dark-sec .replay:hover { border-color: rgba(255,255,255,0.22); }
+.replay svg { width: 13px; height: 13px; }
+
+/* ── SECTION ─────────────────────────────────── */
+.sec { border-top: 1px solid var(--rule); padding: 76px 60px; }
+.lbl {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 14px;
+}
+.sec-note {
+  font-size: 14px; line-height: 1.6; color: var(--dim2);
+  max-width: 540px; margin-bottom: 52px;
+}
+
+/* ── RESTING MARK ────────────────────────────── */
+.rest-row { display: flex; align-items: center; gap: 64px; flex-wrap: wrap; }
+
+/* ── AGENT ROSTER ────────────────────────────── */
+.roster {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 44px 40px;
+}
+@media (max-width: 920px) { .roster { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .roster { grid-template-columns: 1fr; } }
+
+.agent {
+  display: flex; align-items: center; gap: 6px;
+  padding-bottom: 28px; border-bottom: 1px solid var(--rule);
+}
+.agent-mark { flex: 0 0 auto; width: 64px; height: 64px; line-height: 0; }
+.agent-meta { display: flex; flex-direction: column; gap: 3px; }
+.agent-name {
+  font-size: 28px; font-weight: 700; letter-spacing: -0.03em;
+  line-height: 1; color: var(--white);
+}
+.agent-role {
+  font-size: 13px; font-weight: 500; letter-spacing: 0.01em;
+  color: var(--dim2);
+}
+.agent-hex {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11.5px; font-weight: 500; letter-spacing: 0.06em;
+  margin-top: 5px;
+}
+
+/* ── LOCKUP LIBRARY ── */
+.locks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 940px) { .locks { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .locks { grid-template-columns: 1fr; } }
+.lock-card { border-radius: 18px; overflow: hidden; }
+.lock-stage {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 172px; padding: 40px 28px;
+}
+.lock-cap {
+  padding: 14px 20px; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
+.lock-h { display: flex; align-items: center; }
+.lock-v { display: flex; flex-direction: column; align-items: center; }
+.lock-wm { font-weight: 700; letter-spacing: -0.04em; line-height: 1; white-space: nowrap; }
+
+/* ── SECTION STAGE ── */
+.lh-stage {
+  position: relative;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 380px; overflow: hidden;
+}
+/* ── WORDMARK ENTRANCE — wipe only ── */
+.lwm { opacity: 0; }
+.lwm.revealed { opacity: 1; }
+.lwm .wm-char { display: inline-block; will-change: transform, opacity; }
+.lwm .wm-char.ai { color: var(--ai-color, #2B51D6); font-weight: 700; }
+.lwm[data-entrance="wipe"].revealed { animation: wmWipe .66s cubic-bezier(.55,0,.2,1) both; }
+@keyframes wmWipe { from { clip-path: inset(0 100% -.12em -.12em); } to { clip-path: inset(0 -.12em -.12em -.12em); } }
+
+/* ── STORY ── */
+.story-sec { padding: 96px 60px; border-top: 1px solid var(--rule); }
+.story-thesis {
+  font-size: clamp(28px, 3.6vw, 48px); font-weight: 700;
+  letter-spacing: -0.03em; line-height: 1.12;
+  color: var(--white); max-width: 860px; margin-bottom: 72px;
+  text-wrap: pretty;
+}
+.story-thesis em { font-style: normal; color: var(--blue); }
+.pillars {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--rule);
+  border-left: 1px solid var(--rule);
+}
+@media (max-width: 900px) { .pillars { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .pillars { grid-template-columns: 1fr; } }
+.pillar {
+  padding: 36px 28px;
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.pillar-n {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 14px;
+}
+.pillar-h {
+  font-size: 17px; font-weight: 700; letter-spacing: -0.02em;
+  color: var(--white); margin-bottom: 10px; line-height: 1.2;
+}
+.pillar-b {
+  font-size: 13.5px; line-height: 1.65; color: var(--dim2);
+  text-wrap: pretty;
+}
+.story-close {
+  margin-top: 72px; padding-top: 48px; border-top: 1px solid var(--rule);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+  align-items: start;
+}
+@media (max-width: 720px) { .story-close { grid-template-columns: 1fr; } }
+.story-close-h {
+  font-size: clamp(18px, 2vw, 26px); font-weight: 700;
+  letter-spacing: -0.025em; line-height: 1.2; color: var(--white);
+  text-wrap: pretty; margin-bottom: 16px;
+}
+.story-close p {
+  font-size: 14px; line-height: 1.7; color: var(--dim2); text-wrap: pretty;
+}
+.story-close p + p { margin-top: 12px; }
+.agent-anim-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+@media (max-width:820px) { .agent-anim-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:560px) { .agent-anim-grid { grid-template-columns:1fr; } }
+.aacard { display:flex; flex-direction:column; align-items:center; gap:16px; padding:34px 16px;
+  border:1px solid var(--rule); border-radius:16px; background:var(--mid); }
+.aamark { width:118px; height:118px; line-height:0; }
+.aameta { text-align:center; }
+.aaname { font-size:20px; font-weight:700; letter-spacing:-.02em; }
+.aarole { font-size:12px; color:var(--dim2); margin-top:3px; }
+.btn-inline { position:static; transform:none; margin:40px auto 0; display:inline-flex; white-space:nowrap; }
+
+/* ── PALETTE ── */
+.swatches { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; }
+.swatch { border:1px solid var(--rule); border-radius:14px; overflow:hidden; }
+.swatch-chip { height:94px; }
+.swatch-meta { padding:14px 16px; }
+.swatch-name { font-size:16px; font-weight:700; letter-spacing:-.01em; color:var(--white); }
+.swatch-role { font-size:12px; color:var(--dim2); margin-top:2px; }
+.swatch-hex  { font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:.06em; margin-top:9px; }
+
+/* ── ASSET EXPORT ── */
+.exp-group { margin-bottom:44px; }
+.exp-h { font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--white); margin-bottom:16px; }
+.exp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+.exp-card { border:1px solid var(--rule); border-radius:14px; overflow:hidden; background:var(--mid); }
+.exp-prev { height:118px; display:flex; align-items:center; justify-content:center; }
+.exp-foot { padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.exp-label { font-size:12px; font-weight:700; color:var(--white); }
+.exp-btns { display:flex; gap:6px; flex:0 0 auto; }
+.exp-btns button {
+  font-family:inherit; font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  padding:6px 10px; border-radius:7px; cursor:pointer;
+  background:transparent; border:1px solid var(--rule); color:var(--dim2); transition:all .16s ease;
+}
+.exp-btns button:hover { border-color:rgba(10,12,28,.28); color:var(--white); }
+.exp-btns button:disabled { opacity:.5; cursor:progress; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span>mesh.ai</span>
+  <span>Identity &mdash; 2026</span>
+</div>
+
+<!-- HERO (light — primary) -->
+<div class="hero">
+  <div class="lockup" id="lockupLight">
+    <div id="liveMarkLight" class="mark-box" style="width:120px;height:120px;"></div>
+    <div class="wm lwm" id="heroWMLight" data-entrance="wipe" style="--ai-color:#2B51D6;"></div>
+  </div>
+
+  <button class="replay" id="replayLight">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+    Replay
+  </button>
+</div>
+
+<!-- DARK MODE — ANIMATED (secondary) -->
+<div class="sec dark-sec">
+  <div class="lbl">Dark mode &mdash; animated</div>
+  <div class="sec-note">The mark on its deep-space canvas &mdash; same video-safe build: centred during the animation, then slides left as the wordmark joins.</div>
+  <div class="lh-stage">
+    <div class="lockup" id="lockupDark">
+      <div id="liveMark" class="mark-box" style="width:100px;height:100px;"></div>
+      <div class="wm lwm" id="heroWM" data-entrance="wipe" style="font-size:84px;--ai-color:#3860EE;"></div>
+    </div>
+    <button class="replay btn-inline" id="replay">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      Replay
+    </button>
+  </div>
+</div>
+
+<!-- STORY / RATIONALE -->
+<div class="story-sec">
+  <p class="story-thesis">A logo should do one thing before anything else: <em>explain the product</em> without a single word of copy. This one does.</p>
+
+  <div class="pillars">
+    <div class="pillar">
+      <div class="pillar-n">01 · The geometry</div>
+      <div class="pillar-h">Six nodes, one hub. That&rsquo;s the product.</div>
+      <div class="pillar-b">The ring maps directly to the architecture. Six agents, six nodes. Everything connects back to the blue center, which is the human. The HR lead, the payroll manager, the employee. They&rsquo;re not replaced or automated around. They&rsquo;re the whole point.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-n">02 · The animation</div>
+      <div class="pillar-h">The logo is a product demo.</div>
+      <div class="pillar-b">Lines come in from the outer nodes. Never more than three at once, which mirrors how the product actually works. Each active dot lights up in its agent&rsquo;s color. The hub responds as input lands. When the work settles, three connections hold and the name appears. Watch the logo move and you&rsquo;ve seen the product run.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-n">03 · The feel</div>
+      <div class="pillar-h">Nothing to figure out.</div>
+      <div class="pillar-b">Clean enough to get out of the way. That&rsquo;s what this product needs to feel like for the admin running payroll on a Friday afternoon. No friction, no noise, just clear execution. The mark reflects that from the first second you see it.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-n">04 · The system</div>
+      <div class="pillar-h">One mark. Six identities.</div>
+      <div class="pillar-b">Every agent carries the same geometry in their own color. Penny is indigo. Riley is amber. Milo is emerald. When an agent is working, their mark lights up. One mark does the job of an entire icon family and every piece stays on-brand without any extra work.</div>
+    </div>
+  </div>
+</div>
+
+<!-- THE RESTING MARK -->
+<div class="sec">
+  <div class="lbl">The resting mark</div>
+  <div class="sec-note">When the agents settle, three connections hold — the calm, official mark. Three spokes, six nodes, one blue hub.</div>
+  <div class="rest-row">
+    <div id="restMark" style="width:200px;height:200px;"></div>
+    <div class="lockup">
+      <div id="restLockMark" style="width:80px;height:80px;flex:0 0 auto;"></div>
+      <div class="wm" style="font-size:64px;">mesh<span class="a">.ai</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- LOCKUPS -->
+<div class="sec">
+  <div class="lbl">Lockups</div>
+  <div class="sec-note">The mark and wordmark, weight-matched and tightly set, across the surfaces you&rsquo;ll actually use.</div>
+  <div class="locks" id="locks"></div>
+</div>
+
+<!-- AGENT MARKS -->
+<div class="sec" style="padding-bottom:100px;">
+  <div class="lbl">The six — agent marks</div>
+  <div class="sec-note">Each specialist carries the mark in their own colour. Same geometry, same wordmark family — a single system that signals which teammate is speaking.</div>
+  <div class="roster" id="roster"></div>
+</div>
+
+<!-- ANIMATED AGENT MARKS -->
+<div class="sec">
+  <div class="lbl">The six &mdash; in motion</div>
+  <div class="sec-note">Each specialist runs the same communication build in its own hue &mdash; the mark you&rsquo;d use as an avatar or status glyph when that agent is working.</div>
+  <div class="agent-anim-grid" id="agentAnim"></div>
+  <button class="replay btn-inline" id="replayAgents">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+    Replay all
+  </button>
+</div>
+
+<!-- PALETTE -->
+<div class="sec">
+  <div class="lbl">Palette &mdash; agent colours</div>
+  <div class="sec-note">One hub blue, six agent hues. Cool and warm tones alternate around the ring so neighbouring agents always read apart.</div>
+  <div class="swatches" id="swatches"></div>
+</div>
+
+<!-- ASSET EXPORT -->
+<div class="sec" style="padding-bottom:110px;">
+  <div class="lbl">Asset export</div>
+  <div class="sec-note">Marks export as SVG (vector) or PNG (2048px, transparent). Lockups include the wordmark. Animations record to <strong>.webm</strong> at 1920&times;1080 &mdash; drop-in ready for an end card.</div>
+  <div class="exp-group"><div class="exp-h">Marks</div><div class="exp-grid" id="expMarks"></div></div>
+  <div class="exp-group"><div class="exp-h">Lockups</div><div class="exp-grid" id="expLocks"></div></div>
+  <div class="exp-group"><div class="exp-h">Animations &middot; .webm</div><div class="exp-grid" id="expAnims"></div></div>
+</div>
+
+<script src="gifenc-mini.js"></script>
+<script src="mesh-mark.js"></script>
+<script src="mesh-anim.js"></script>
+<script src="mesh-canvas.js"></script>
+<script src="mesh-export.js"></script>
+<script src="mesh-gif.js"></script>
+<script>
+  // Resting mark + lockup — dark ink on light background
+  document.getElementById('restMark').innerHTML     = MeshMark.staticMark({ ink: '#0A0C1C', hub: '#2B51D6' });
+  document.getElementById('restLockMark').innerHTML = MeshMark.staticMark({ stubs: false, ink: '#0A0C1C', hub: '#2B51D6' });
+
+  // Agent roster — colour-tinted marks + name + role
+  const roster = document.getElementById('roster');
+  MeshMark.AGENTS.forEach(a => {
+    const cell = document.createElement('div');
+    cell.className = 'agent';
+    cell.innerHTML =
+      '<div class="agent-mark">' + MeshMark.staticMark({ mono: a.color, stubs: false }) + '</div>' +
+      '<div class="agent-meta">' +
+        '<div class="agent-name">' + a.name + '</div>' +
+        '<div class="agent-role">' + a.role + '</div>' +
+      '</div>';
+    roster.appendChild(cell);
+  });
+
+  // Lockup library — all weight-matched, tightly set
+  const LOCKS = [
+    { label: 'Primary',            bg: '#F4F5FB', dark: 0, ink: '#0A0C1C', hub: '#2B51D6', mesh: '#0A0C1C', ai: '#2B51D6' },
+    { label: 'Primary — reversed', bg: '#07081A', dark: 1, ink: '#fff',     hub: '#3860EE', mesh: '#fff',     ai: '#3860EE' },
+    { label: 'All white',          bg: '#07081A', dark: 1, mono: '#fff',                     mesh: '#fff',     ai: '#fff' },
+    { label: 'Mono — single ink',  bg: '#ffffff', dark: 0, mono: '#0A0C1C',                  mesh: '#0A0C1C', ai: '#0A0C1C' },
+    { label: 'Vertical',           bg: '#F4F5FB', dark: 0, ink: '#0A0C1C', hub: '#2B51D6', mesh: '#0A0C1C', ai: '#2B51D6', stack: 1 },
+    { label: 'Vertical — reversed', bg: '#07081A', dark: 1, ink: '#fff',    hub: '#3860EE', mesh: '#fff',     ai: '#3860EE', stack: 1 },
+  ];
+  const locksEl = document.getElementById('locks');
+  LOCKS.forEach(L => {
+    const svg = MeshMark.staticMark(L.mono ? { mono: L.mono, stubs: false } : { hub: L.hub, stubs: false });
+    const mSize = L.stack ? 42 : 40;
+    const fSize = L.stack ? 30 : 33;
+    const gap   = L.stack ? 8 : 5;
+    const markStyle = L.mono ? '' : ('color:' + L.ink + ';');
+    const capStyle = L.dark
+      ? 'background:#0C0E22;color:rgba(237,240,250,.42);border-top:1px solid var(--rule);'
+      : 'background:rgba(0,0,0,.045);color:rgba(10,12,28,.45);';
+    const stageBorder = L.dark ? 'border:1px solid var(--rule);border-bottom:none;' : '';
+    const card = document.createElement('div');
+    card.className = 'lock-card';
+    card.innerHTML =
+      '<div class="lock-stage" style="background:' + L.bg + ';' + stageBorder + '">' +
+        '<div class="' + (L.stack ? 'lock-v' : 'lock-h') + '" style="gap:' + gap + 'px;">' +
+          '<div style="width:' + mSize + 'px;height:' + mSize + 'px;flex:0 0 auto;line-height:0;' + markStyle + '">' + svg + '</div>' +
+          '<div class="lock-wm" style="font-size:' + fSize + 'px;font-weight:700;color:' + L.mesh + ';">mesh<span style="color:' + L.ai + '">.ai</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="lock-cap" style="' + capStyle + '">' + L.label + '</div>';
+    locksEl.appendChild(card);
+  });
+
+  // build per-character spans for a wordmark element (mesh | .ai)
+  function buildWM(el) {
+    const text = 'mesh.ai', aiFrom = 4;
+    el.innerHTML = '';
+    [...text].forEach((ch, i) => {
+      const sp = document.createElement('span');
+      sp.className = 'wm-char' + (i >= aiFrom ? ' ai' : '');
+      sp.style.setProperty('--i', i);
+      sp.textContent = ch;
+      el.appendChild(sp);
+    });
+  }
+
+  // LIGHT — primary hero, plays on load
+  const heroWMLight = document.getElementById('heroWMLight');
+  buildWM(heroWMLight);
+  const commLight = MeshComm(
+    document.getElementById('liveMarkLight'),
+    heroWMLight,
+    { ink: '#0A0C1C', hub: '#2B51D6', duration: 3000, textDelay: 360,
+      centerShift: true, lockupEl: document.getElementById('lockupLight') }
+  );
+  requestAnimationFrame(() => setTimeout(() => commLight.play(), 350));
+  document.getElementById('replayLight').addEventListener('click', () => commLight.play());
+
+  // entrance locked to wipe — no picker
+
+  // DARK — secondary section, plays when scrolled into view
+  buildWM(document.getElementById('heroWM'));
+  const comm = MeshComm(
+    document.getElementById('liveMark'),
+    document.getElementById('heroWM'),
+    { duration: 3000, textDelay: 360,
+      centerShift: true, lockupEl: document.getElementById('lockupDark') }
+  );
+  const darkIO = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) { comm.play(); darkIO.disconnect(); } });
+  }, { threshold: 0.4 });
+  darkIO.observe(document.getElementById('lockupDark'));
+  document.getElementById('replay').addEventListener('click', () => comm.play());
+
+  // ANIMATED AGENT MARKS — each runs the build in its own colour (mono)
+  const agentAnim = document.getElementById('agentAnim');
+  const agentComms = [];
+  MeshMark.AGENTS.forEach(a => {
+    const cell = document.createElement('div'); cell.className = 'aacard';
+    const box  = document.createElement('div'); box.className = 'aamark';
+    cell.appendChild(box); agentAnim.appendChild(cell);
+    agentComms.push(MeshComm(box, null, { mono: a.color, hub: a.color, ink: a.color, duration: 2600 }));
+  });
+  function playAgents() { agentComms.forEach((c, i) => setTimeout(() => c.play(), i * 240)); }
+  const io = new IntersectionObserver(ents => {
+    ents.forEach(e => { if (e.isIntersecting) { playAgents(); io.disconnect(); } });
+  }, { threshold: 0.3 });
+  io.observe(agentAnim);
+  document.getElementById('replayAgents').addEventListener('click', playAgents);
+
+  // PALETTE
+  const PAL = [{ name: 'mesh.ai', role: 'Core \u00b7 hub', color: '#3860EE' }]
+    .concat(MeshMark.AGENTS.map(a => ({ name: a.name, role: a.role, color: a.color })));
+  const sw = document.getElementById('swatches');
+  PAL.forEach(p => {
+    const el = document.createElement('div'); el.className = 'swatch';
+    el.innerHTML =
+      '<div class="swatch-chip" style="background:' + p.color + '"></div>' +
+      '<div class="swatch-meta">' +
+        '<div class="swatch-name">' + p.name + '</div>' +
+        '<div class="swatch-role">' + p.role + '</div>' +
+        '<div class="swatch-hex" style="color:' + p.color + '">' + p.color.toUpperCase() + '</div>' +
+      '</div>';
+    sw.appendChild(el);
+  });
+
+  // ── ASSET EXPORT ──────────────────────────────────────────────
+  const MARK_EXPORTS = [
+    { name: 'mesh-mark-white',     label: 'Primary \u00b7 white', opts: { ink: '#fff',     hub: '#3860EE' }, bg: '#07081A' },
+    { name: 'mesh-mark-dark',      label: 'Primary \u00b7 dark',  opts: { ink: '#0A0C1C',  hub: '#3860EE' }, bg: '#F4F5FB' },
+    { name: 'mesh-mark-mono-black',label: 'Mono \u00b7 black',    opts: { mono: '#0A0C1C' },                bg: '#F4F5FB' },
+    { name: 'mesh-mark-mono-white',label: 'Mono \u00b7 white',    opts: { mono: '#fff' },                   bg: '#07081A' },
+    { name: 'mesh-mark-mono-blue', label: 'Mono \u00b7 blue',     opts: { mono: '#3860EE' },                bg: '#F4F5FB' },
+  ].concat(MeshMark.AGENTS.map(a => ({
+    name: 'mesh-mark-' + a.key, label: a.name, opts: { mono: a.color }, bg: '#0B0D21'
+  })));
+
+  const LOCK_EXPORTS = [
+    { name: 'mesh-lockup-horizontal-dark',  label: 'Horizontal \u00b7 dark',  mesh: '#fff',    ai: '#3860EE', markOpts: { ink: '#fff',    hub: '#3860EE' }, bg: '#07081A' },
+    { name: 'mesh-lockup-horizontal-light', label: 'Horizontal \u00b7 light', mesh: '#0A0C1C', ai: '#2B51D6', markOpts: { ink: '#0A0C1C', hub: '#2B51D6' }, bg: '#F4F5FB' },
+    { name: 'mesh-lockup-vertical-dark',    label: 'Vertical \u00b7 dark',    mesh: '#fff',    ai: '#3860EE', markOpts: { ink: '#fff',    hub: '#3860EE' }, bg: '#07081A', stack: true },
+    { name: 'mesh-lockup-vertical-light',   label: 'Vertical \u00b7 light',   mesh: '#0A0C1C', ai: '#2B51D6', markOpts: { ink: '#0A0C1C', hub: '#2B51D6' }, bg: '#F4F5FB', stack: true },
+  ];
+
+  const ANIM_EXPORTS = [
+    { name: 'mesh-animation-dark',  label: 'Brand \u00b7 dark',  layout: 'wide', bg: '#07081A', ink: '#fff',    hub: '#3860EE', wordmark: { mesh: '#fff',    ai: '#3860EE' } },
+    { name: 'mesh-animation-light', label: 'Brand \u00b7 light', layout: 'wide', bg: '#F4F5FB', ink: '#0A0C1C', hub: '#2B51D6', wordmark: { mesh: '#0A0C1C', ai: '#2B51D6' } },
+  ].concat(MeshMark.AGENTS.map(a => ({
+    name: 'mesh-animation-' + a.key, label: a.name, layout: 'mark', w: 1080, h: 1080,
+    bg: '#0B0D21', mono: a.color, hub: a.color, ink: a.color, comm: 2600
+  })));
+
+  function expCard(prevBg, markHTML, label, btns) {
+    const card = document.createElement('div'); card.className = 'exp-card';
+    const foot = document.createElement('div'); foot.className = 'exp-foot';
+    foot.innerHTML = '<span class="exp-label">' + label + '</span>';
+    const grp = document.createElement('div'); grp.className = 'exp-btns';
+    btns.forEach(b => {
+      const btn = document.createElement('button'); btn.textContent = b.t;
+      btn.addEventListener('click', () => b.fn(btn));
+      grp.appendChild(btn);
+    });
+    foot.appendChild(grp);
+    card.innerHTML = '<div class="exp-prev" style="background:' + prevBg + '">' + markHTML + '</div>';
+    card.appendChild(foot);
+    return card;
+  }
+
+  const expMarks = document.getElementById('expMarks');
+  MARK_EXPORTS.forEach(m => {
+    const prev = '<div style="width:66px;height:66px;line-height:0;">' + MeshMark.staticMark(Object.assign({ stubs: false }, m.opts)) + '</div>';
+    expMarks.appendChild(expCard(m.bg, prev, m.label, [
+      { t: 'SVG', fn: () => MeshExport.downloadSVG(m.name, m.opts) },
+      { t: 'PNG', fn: async (btn) => { btn.disabled = true; await MeshExport.downloadPNG(m.name, m.opts, 2048); btn.disabled = false; } },
+    ]));
+  });
+
+  const expLocks = document.getElementById('expLocks');
+  LOCK_EXPORTS.forEach(L => {
+    const fs = L.stack ? 18 : 20;
+    const ms = L.stack ? 40 : 38;
+    const wm = '<div style="font:700 ' + fs + 'px Inter;letter-spacing:-.04em;color:' + L.mesh + ';white-space:nowrap;">mesh<span style="color:' + L.ai + '">.ai</span></div>';
+    const mk = '<div style="width:' + ms + 'px;height:' + ms + 'px;line-height:0;flex:0 0 auto;">' + MeshMark.staticMark(Object.assign({ stubs: false }, L.markOpts)) + '</div>';
+    const prev = '<div style="display:flex;flex-direction:' + (L.stack ? 'column' : 'row') + ';align-items:center;gap:' + (L.stack ? 8 : 7) + 'px;">' + mk + wm + '</div>';
+    expLocks.appendChild(expCard(L.bg, prev, L.label, [
+      { t: 'SVG', fn: () => MeshExport.downloadLockupSVG(L.name, L) },
+      { t: 'PNG', fn: async (btn) => { btn.disabled = true; await MeshExport.downloadLockupPNG(L.name, L, 3); btn.disabled = false; } },
+    ]));
+  });
+
+  const expAnims = document.getElementById('expAnims');
+  ANIM_EXPORTS.forEach(an => {
+    const markOpts = an.mono ? { mono: an.mono } : { ink: an.ink, hub: an.hub };
+    const prev = '<div style="width:62px;height:62px;line-height:0;">' + MeshMark.staticMark(Object.assign({ stubs: false }, markOpts)) + '</div>';
+    expAnims.appendChild(expCard(an.bg, prev, an.label, [
+      { t: 'WebM', fn: async (btn) => {
+        const old = btn.textContent; btn.disabled = true; btn.textContent = 'Recording…';
+        try { await MeshExport.recordAnim(Object.assign({ filename: an.name }, an)); }
+        finally { btn.disabled = false; btn.textContent = old; }
+      } },
+      { t: 'GIF', fn: async (btn) => {
+        const old = btn.textContent; btn.disabled = true; btn.textContent = '0%';
+        try { await MeshGIF.recordGIF(Object.assign({ filename: an.name }, an), p => { btn.textContent = Math.round(p * 100) + '%'; }); }
+        finally { btn.disabled = false; btn.textContent = old; }
+      } },
+    ]));
+  });
+</script>
+
+</body>
+</html>
+
+<style id="__om-edit-overrides">
+#heroWMLight .wm-char { font-weight: 700 !important }
+</style>
