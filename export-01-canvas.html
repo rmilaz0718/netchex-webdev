@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export: Hero Light GIF</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 700px; margin: 60px auto; padding: 20px; background: #f5f5f5; }
+    .container { background: white; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { color: #003087; margin-bottom: 8px; }
+    .subtitle { color: #666; margin-bottom: 32px; }
+    button { padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; margin-right: 12px; }
+    button:hover { background: #1d4ed8; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .status { margin-top: 20px; padding: 12px; border-radius: 6px; display: none; }
+    .status.show { display: block; }
+    .success { background: #d4edda; color: #155724; }
+    .progress { background: #fff3cd; color: #856404; }
+    .error { background: #f8d7da; color: #721c24; }
+    canvas { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎬 Export: Hero Light Animation</h1>
+  <p class="subtitle">Generate a high-quality GIF from the mesh.ai animation.</p>
+
+  <button id="exportBtn" onclick="exportGif()">📥 Generate & Download GIF</button>
+  <button id="previewBtn" onclick="previewAnimation()" style="background: #666;">👁️ Preview Animation</button>
+
+  <div id="status" class="status"></div>
+
+  <canvas id="renderCanvas" width="600" height="600"></canvas>
+  <div id="preview" style="margin-top: 20px;"></div>
+</div>
+
+<script src="gifenc-mini.js"></script>
+<script src="mesh-mark.js"></script>
+<script src="mesh-canvas.js"></script>
+<script src="mesh-anim.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+
+<script>
+  const canvas = document.getElementById('renderCanvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const WIDTH = 600;
+  const HEIGHT = 600;
+  const FPS = 24;
+  const DURATION = 3000; // 3 seconds
+
+  async function exportGif() {
+    const btn = document.getElementById('exportBtn');
+    const status = document.getElementById('status');
+    
+    btn.disabled = true;
+    status.className = 'status show progress';
+    status.textContent = '⏳ Rendering animation frames...';
+
+    try {
+      // Check dependencies
+      if (typeof window.MeshCanvas === 'undefined') {
+        throw new Error('MeshCanvas not loaded. Refresh the page.');
+      }
+      if (typeof window.MeshMark === 'undefined') {
+        throw new Error('MeshMark not loaded. Refresh the page.');
+      }
+
+      const frameCount = Math.ceil((DURATION / 1000) * FPS);
+      const frames = [];
+
+      // Render each frame
+      for (let i = 0; i < frameCount; i++) {
+        const progress = i / frameCount;
+        const frameTime = progress * DURATION;
+
+        // Create frame data
+        const frameData = {
+          progress: progress,
+          time: frameTime,
+          shiftP: Math.max(0, Math.min(1, (frameTime - 2400) / 600)) // text reveal
+        };
+
+        // Draw to canvas
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        ctx.globalCompositeOperation = 'source-over';
+
+        // Use MeshCanvas to render mark
+        try {
+          window.MeshCanvas.drawMark(ctx, WIDTH / 2, HEIGHT / 2, 120, frameData);
+        } catch (e) {
+          console.warn('Frame render error:', e);
+        }
+
+        // Capture frame
+        const imageData = ctx.getImageData(0, 0, WIDTH, HEIGHT);
+        frames.push(imageData);
+
+        const pct = Math.round((i / frameCount) * 100);
+        status.textContent = `⏳ Rendering frames... ${pct}%`;
+      }
+
+      if (frames.length === 0) {
+        throw new Error('No frames rendered');
+      }
+
+      status.textContent = `🎬 Encoding GIF (${frames.length} frames)...`;
+
+      // Create GIF
+      const gif = new GIF({
+        workers: 2,
+        quality: 10,
+        width: WIDTH,
+        height: HEIGHT,
+        workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+      });
+
+      // Add frames
+      frames.forEach((imageData) => {
+        const frameCanvas = document.createElement('canvas');
+        frameCanvas.width = WIDTH;
+        frameCanvas.height = HEIGHT;
+        const frameCtx = frameCanvas.getContext('2d');
+        frameCtx.putImageData(imageData, 0, 0);
+        gif.addFrame(frameCanvas, { delay: DURATION / frames.length });
+      });
+
+      gif.on('finished', function(blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'mesh-ai-hero-light.gif';
+        link.click();
+        URL.revokeObjectURL(url);
+
+        status.className = 'status show success';
+        status.textContent = `✅ GIF exported! (${(blob.size / 1024).toFixed(1)}KB)`;
+        btn.disabled = false;
+      });
+
+      gif.on('progress', (pct) => {
+        status.textContent = `🎬 Encoding... ${Math.round(pct * 100)}%`;
+      });
+
+      gif.render();
+
+    } catch (e) {
+      status.className = 'status show error';
+      status.textContent = `❌ Error: ${e.message}`;
+      console.error('Export error:', e);
+      btn.disabled = false;
+    }
+  }
+
+  function previewAnimation() {
+    const preview = document.getElementById('preview');
+    preview.innerHTML = '<p>Loading...</p>';
+    
+    try {
+      const frameCount = 24;
+      const frames = [];
+
+      for (let i = 0; i < frameCount; i++) {
+        const progress = i / frameCount;
+        const frameData = { progress: progress, time: progress * 3000 };
+
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        window.MeshCanvas.drawMark(ctx, WIDTH / 2, HEIGHT / 2, 120, frameData);
+
+        const imageData = ctx.getImageData(0, 0, WIDTH, HEIGHT);
+        frames.push(imageData);
+      }
+
+      preview.innerHTML = '';
+      const previewCanvas = document.createElement('canvas');
+      previewCanvas.width = WIDTH;
+      previewCanvas.height = HEIGHT;
+      const previewCtx = previewCanvas.getContext('2d');
+
+      let frameIndex = 0;
+      const animate = () => {
+        const frameData = { progress: frameIndex / frames.length, time: (frameIndex / frames.length) * 3000 };
+        previewCtx.clearRect(0, 0, WIDTH, HEIGHT);
+        window.MeshCanvas.drawMark(previewCtx, WIDTH / 2, HEIGHT / 2, 120, frameData);
+        
+        frameIndex = (frameIndex + 1) % frames.length;
+        setTimeout(animate, 1000 / FPS);
+      };
+
+      previewCanvas.style.width = '100%';
+      previewCanvas.style.maxWidth = '300px';
+      previewCanvas.style.border = '1px solid #ddd';
+      previewCanvas.style.borderRadius = '6px';
+      preview.appendChild(previewCanvas);
+
+      animate();
+    } catch (e) {
+      preview.innerHTML = `<p style="color: red;">Error: ${e.message}</p>`;
+    }
+  }
+</script>
+
+</body>
+</html>
