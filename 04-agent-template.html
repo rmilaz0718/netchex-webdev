@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mesh.ai — Animation · Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:    #0B0D21;
+  --white: #EDF0FA;
+  --dim:   rgba(237,240,250,0.38);
+  --dim2:  rgba(237,240,250,0.55);
+  --rule:  rgba(255,255,255,0.07);
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  margin: 0;
+  padding: 0;
+}
+
+.info {
+  position: absolute;
+  top: 20px;
+  left: 60px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 80px 60px;
+  gap: 32px;
+}
+
+.agent-mark {
+  width: 160px;
+  height: 160px;
+  line-height: 0;
+}
+
+.agent-meta {
+  text-align: center;
+}
+
+.agent-name {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.agent-role {
+  font-size: 13px;
+  color: var(--dim2);
+}
+
+.replay {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 18px;
+  border-radius: 100px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--dim2);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.replay:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  color: var(--white);
+}
+
+.replay svg {
+  width: 13px;
+  height: 13px;
+}
+</style>
+</head>
+<body>
+
+<div class="info" id="info"></div>
+
+<div class="container">
+  <div class="agent-mark" id="agentMark"></div>
+  <div class="agent-meta">
+    <div class="agent-name" id="agentName"></div>
+    <div class="agent-role" id="agentRole"></div>
+  </div>
+  <button class="replay" id="replay">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+    Replay
+  </button>
+</div>
+
+<script src="../gifenc-mini.js"></script>
+<script src="../mesh-mark.js"></script>
+<script src="../mesh-anim.js"></script>
+<script>
+  // Parse agent from URL parameter or default to first agent
+  const params = new URLSearchParams(window.location.search);
+  const agentKey = params.get('agent') || (MeshMark.AGENTS[0]?.key);
+  const agent = MeshMark.AGENTS.find(a => a.key === agentKey) || MeshMark.AGENTS[0];
+
+  // Update title and labels
+  document.title = `mesh.ai — Animation · ${agent.name}`;
+  document.getElementById('info').textContent = `mesh.ai · ${agent.name}`;
+  document.getElementById('agentName').textContent = agent.name;
+  document.getElementById('agentRole').textContent = agent.role;
+
+  const comm = MeshComm(
+    document.getElementById('agentMark'),
+    null,
+    {
+      mono: agent.color,
+      hub: agent.color,
+      ink: agent.color,
+      duration: 2600
+    }
+  );
+
+  // Play on load with a small delay
+  requestAnimationFrame(() => setTimeout(() => comm.play(), 350));
+
+  document.getElementById('replay').addEventListener('click', () => comm.play());
+</script>
+
+</body>
+</html>

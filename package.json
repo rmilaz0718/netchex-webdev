@@ -1,0 +1,24 @@
+{
+  "name": "mesh-ai-animations",
+  "version": "1.0.0",
+  "description": "Mesh AI animation library with batch GIF export",
+  "main": "export-gifs.js",
+  "scripts": {
+    "export": "node export-gifs.js",
+    "export:hero": "node export-single.js 01-hero-light.html",
+    "export:agents": "node export-single.js 03-agents-all.html"
+  },
+  "dependencies": {
+    "puppeteer": "^latest",
+    "ffmpeg-static": "^latest"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "mesh-ai",
+    "animation",
+    "gif",
+    "export"
+  ],
+  "author": "Rebecca Milazzo",
+  "license": "MIT"
+}
