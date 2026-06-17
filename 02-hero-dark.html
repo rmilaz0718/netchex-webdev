@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mesh.ai — Animation · Hero Dark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:    #07081A;
+  --mid:   #0C0E22;
+  --rule:  rgba(255,255,255,0.07);
+  --white: #EDF0FA;
+  --dim:   rgba(237,240,250,0.38);
+  --dim2:  rgba(237,240,250,0.55);
+  --blue:  #3860EE;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 80px 60px;
+  overflow: hidden;
+}
+
+.lockup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mark-box {
+  flex: 0 0 auto;
+  line-height: 0;
+  width: 100px;
+  height: 100px;
+}
+
+.wm {
+  font-size: 84px;
+  font-weight: 700;
+  letter-spacing: -0.044em;
+  line-height: 1;
+  color: var(--white);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.wm .a {
+  color: var(--blue);
+}
+
+.hero-wm {
+  opacity: 0;
+}
+
+.hero-wm.revealed {
+  opacity: 1;
+  animation: wmIn 0.82s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
+}
+
+@keyframes wmIn {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.replay {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 18px;
+  border-radius: 100px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--dim2);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.replay:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  color: var(--white);
+}
+
+.replay svg {
+  width: 13px;
+  height: 13px;
+}
+
+.info {
+  position: absolute;
+  top: 20px;
+  left: 60px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+</style>
+</head>
+<body>
+
+<div class="info">mesh.ai · Hero Dark Animation</div>
+
+<div class="container">
+  <div class="lockup" id="lockup">
+    <div id="liveMark" class="mark-box"></div>
+    <div class="wm hero-wm" id="heroWM" style="--ai-color:#3860EE;"></div>
+  </div>
+
+  <button class="replay" id="replay">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+    Replay
+  </button>
+</div>
+
+<script src="../gifenc-mini.js"></script>
+<script src="../mesh-mark.js"></script>
+<script src="../mesh-anim.js"></script>
+<script>
+  // Build wordmark with character spans
+  function buildWM(el) {
+    const text = 'mesh.ai', aiFrom = 4;
+    el.innerHTML = '';
+    [...text].forEach((ch, i) => {
+      const sp = document.createElement('span');
+      sp.className = 'wm-char' + (i >= aiFrom ? ' a' : '');
+      sp.textContent = ch;
+      el.appendChild(sp);
+    });
+  }
+
+  const heroWM = document.getElementById('heroWM');
+  buildWM(heroWM);
+
+  const comm = MeshComm(
+    document.getElementById('liveMark'),
+    heroWM,
+    {
+      duration: 3000,
+      textDelay: 360,
+      centerShift: true,
+      lockupEl: document.getElementById('lockup')
+    }
+  );
+
+  // Play on load with a small delay
+  requestAnimationFrame(() => setTimeout(() => comm.play(), 350));
+
+  document.getElementById('replay').addEventListener('click', () => comm.play());
+</script>
+
+</body>
+</html>

@@ -63,9 +63,9 @@ window.MeshExport = (function () {
   }
   // L = { mesh, ai, markOpts, stack }  — exports are transparent (no bg)
   function lockupLayout(L) {
-    const markPx = L.stack ? 150 : 132;
-    const fontPx = L.stack ? 60 : 64;
-    const gap    = L.stack ? 14 : 16;
+    const markPx = 132;
+    const fontPx = 64;
+    const gap    = 16;
     const pad    = Math.round(markPx * 0.13);
     const m = wmMetrics(fontPx);
     let W, H, markX, markY, tx, baseline;

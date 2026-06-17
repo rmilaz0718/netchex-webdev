@@ -80,8 +80,9 @@
       const palBit = Math.log2(pow2) - 1; // stored as (N-1) per spec
       const delay  = Math.max(1, Math.round((opts.delay || 66) / 10)); // centiseconds
 
-      // Graphics Control Extension
-      buf.push(0x21,0xF9,0x04, 0x00, ...u16(delay), 0x00, 0x00);
+      // Graphics Control Extension — support optional transparent index
+      const ti = (opts.transparentIndex != null && opts.transparentIndex >= 0) ? (opts.transparentIndex | 0) : -1;
+      buf.push(0x21,0xF9,0x04, ti >= 0 ? 0x09 : 0x00, ...u16(delay), ti >= 0 ? ti : 0, 0x00);
 
       // Image Descriptor + local color table flag
       buf.push(0x2C, ...u16(0), ...u16(0), ...u16(w), ...u16(h), 0x80 | palBit);
@@ -156,5 +157,32 @@
     return indices;
   }
 
-  window.gifenc = { GIFEncoder, quantize, applyPalette };
+  // applyPaletteAlpha: like applyPalette but maps alpha=0 pixels to transparentIndex
+  function applyPaletteAlpha(data, palette, transparentIndex) {
+    const n = palette.length / 3;
+    const indices = new Uint8Array(data.length / 4);
+    const cache = new Map();
+    for (let i = 0; i < n; i++) {
+      const k = (palette[i*3] << 16) | (palette[i*3+1] << 8) | palette[i*3+2];
+      if (!cache.has(k)) cache.set(k, i);
+    }
+    for (let i = 0; i < indices.length; i++) {
+      if (data[i*4+3] === 0) { indices[i] = transparentIndex; continue; }
+      const r = data[i*4], g = data[i*4+1], b = data[i*4+2];
+      const k = (r << 16) | (g << 8) | b;
+      if (cache.has(k)) { indices[i] = cache.get(k); continue; }
+      let best = 0, bestD = Infinity;
+      for (let j = 0; j < n; j++) {
+        if (j === transparentIndex) continue;
+        const dr = r - palette[j*3], dg = g - palette[j*3+1], db = b - palette[j*3+2];
+        const d = dr*dr + dg*dg + db*db;
+        if (d < bestD) { bestD = d; best = j; }
+      }
+      cache.set(k, best);
+      indices[i] = best;
+    }
+    return indices;
+  }
+
+  window.gifenc = { GIFEncoder, quantize, applyPalette, applyPaletteAlpha };
 })();

@@ -51,12 +51,12 @@
     if (stubs) PTS.forEach(([nx, ny]) => {
       const dx = (nx - cx) / R, dy = (ny - cy) / R;
       s += `<line x1="${nx}" y1="${ny}" x2="${f(nx + dx * sL)}" y2="${f(ny + dy * sL)}"
-        stroke="${ink}" stroke-width="${SW.stub}" stroke-opacity="0.28" stroke-linecap="round"/>`;
+        stroke="${ink}" stroke-width="${SW.stub}" stroke-opacity="0.16" stroke-linecap="round"/>`;
     });
     PTS.forEach(([nx, ny], i) => {
       const [mx, my] = PTS[(i + 1) % 6];
       s += `<line x1="${nx}" y1="${ny}" x2="${mx}" y2="${my}"
-        stroke="${ink}" stroke-width="${SW.ring}" stroke-linecap="round"/>`;
+        stroke="${ink}" stroke-width="${SW.ring}" stroke-opacity="0.9" stroke-linecap="round"/>` ;
     });
     spokeSet.forEach(i => {
       const [nx, ny] = PTS[i];
