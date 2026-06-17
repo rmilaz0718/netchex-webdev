@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export: Hero Light GIF</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 600px; margin: 60px auto; padding: 20px; }
+    h1 { color: #003087; margin-bottom: 20px; }
+    p { color: #666; margin-bottom: 16px; line-height: 1.6; }
+    button { padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+    button:hover { background: #1d4ed8; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .status { margin-top: 20px; padding: 12px; border-radius: 6px; display: none; }
+    .status.show { display: block; }
+    .success { background: #d4edda; color: #155724; }
+    .progress { background: #fff3cd; color: #856404; }
+  </style>
+</head>
+<body>
+
+<h1>🎬 Export: Hero Light Animation</h1>
+<p>This page will generate a high-quality GIF of the mesh.ai hero light animation with a transparent background.</p>
+
+<button id="exportBtn" onclick="exportGif()">Generate GIF</button>
+
+<div id="status" class="status"></div>
+
+<p style="margin-top: 40px; color: #999; font-size: 12px;">
+  The GIF will be 600×600px, 24fps, with transparent background. 
+  Duration: ~3 seconds. File size: ~500KB-1MB.
+</p>
+
+<script src="gifenc-mini.js"></script>
+<script src="mesh-mark.js"></script>
+<script src="mesh-canvas.js"></script>
+<script src="mesh-anim.js"></script>
+<script src="mesh-gif.js"></script>
+
+<script>
+  async function exportGif() {
+    const btn = document.getElementById('exportBtn');
+    const status = document.getElementById('status');
+    
+    btn.disabled = true;
+    status.className = 'status show progress';
+    status.textContent = '⏳ Generating GIF... (this may take 10-30 seconds)';
+
+    try {
+      // Call built-in MeshGIF exporter
+      if (typeof window.MeshGIF === 'undefined') {
+        throw new Error('MeshGIF not loaded');
+      }
+
+      // Record the animation
+      await new Promise((resolve, reject) => {
+        window.MeshGIF.recordGIF({
+          filename: 'mesh-ai-hero-light',
+          w: 600,
+          h: 600,
+          fps: 24,
+          bg: 'transparent',
+          layout: 'mark',
+          comm: 3000  // 3 second animation
+        }, function(progress) {
+          status.textContent = `⏳ Generating... ${Math.round(progress * 100)}%`;
+          if (progress >= 1) {
+            resolve();
+          }
+        });
+      });
+
+      status.className = 'status show success';
+      status.textContent = '✅ GIF exported! Check your Downloads folder.';
+    } catch (e) {
+      status.className = 'status show';
+      status.style.background = '#f8d7da';
+      status.style.color = '#721c24';
+      status.textContent = `❌ Error: ${e.message}`;
+      console.error(e);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // Auto-start on page load
+  window.addEventListener('load', () => {
+    console.log('MeshGIF available:', typeof window.MeshGIF);
+    console.log('MeshMark available:', typeof window.MeshMark);
+  });
+</script>
+
+</body>
+</html>
