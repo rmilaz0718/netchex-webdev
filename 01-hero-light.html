@@ -150,6 +150,9 @@ body {
 <script src="mesh-mark.js"></script>
 <script src="mesh-anim.js"></script>
 <script>
+  console.log('Scripts loaded. MeshMark:', typeof window.MeshMark);
+  console.log('MeshComm:', typeof window.MeshComm);
+
   // Build wordmark with character spans
   function buildWM(el) {
     const text = 'mesh.ai', aiFrom = 4;
