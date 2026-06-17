@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export: Hero Light GIF</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 700px; margin: 60px auto; padding: 20px; }
+    .container { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+    .preview { text-align: center; }
+    .preview h2 { color: #003087; margin-bottom: 20px; font-size: 1.3rem; }
+    .animation-box { width: 100%; height: 500px; background: #F4F5FB; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .animation-box iframe { width: 100%; height: 100%; border: none; }
+    .controls { display: flex; flex-direction: column; gap: 20px; }
+    .controls h2 { color: #003087; margin-bottom: 0; font-size: 1.3rem; }
+    p { color: #666; line-height: 1.6; margin: 0; }
+    button { padding: 14px 24px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+    button:hover { background: #1d4ed8; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .status { padding: 12px; border-radius: 6px; display: none; font-size: 13px; }
+    .status.show { display: block; }
+    .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .progress { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .settings { border-top: 1px solid #eee; padding-top: 16px; font-size: 12px; }
+    .setting-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    label { display: block; margin-bottom: 4px; font-weight: 600; color: #333; }
+    input { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="preview">
+    <h2>Preview</h2>
+    <div class="animation-box">
+      <iframe src="01-hero-light.html" title="Animation preview"></iframe>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div>
+      <h2>Export</h2>
+      <p>Generate a high-quality animated GIF with transparent background.</p>
+    </div>
+
+    <button id="exportBtn" onclick="exportGif()">📥 Generate & Download GIF</button>
+
+    <div id="status" class="status"></div>
+
+    <div class="settings">
+      <div class="setting-group">
+        <div>
+          <label for="width">Width (px)</label>
+          <input type="number" id="width" value="600" min="100" max="2000">
+        </div>
+        <div>
+          <label for="height">Height (px)</label>
+          <input type="number" id="height" value="600" min="100" max="2000">
+        </div>
+      </div>
+      <div class="setting-group">
+        <div>
+          <label for="fps">FPS</label>
+          <input type="number" id="fps" value="24" min="1" max="60">
+        </div>
+        <div>
+          <label for="duration">Duration (ms)</label>
+          <input type="number" id="duration" value="3000" min="500" max="10000">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+
+<script>
+  async function exportGif() {
+    const btn = document.getElementById('exportBtn');
+    const status = document.getElementById('status');
+    const width = parseInt(document.getElementById('width').value);
+    const height = parseInt(document.getElementById('height').value);
+    const fps = parseInt(document.getElementById('fps').value);
+    const duration = parseInt(document.getElementById('duration').value);
+    
+    btn.disabled = true;
+    status.className = 'status show progress';
+    status.textContent = '⏳ Initializing...';
+
+    try {
+      // Get the animation iframe
+      const iframe = document.querySelector('iframe');
+      const animDoc = iframe.contentDocument || iframe.contentWindow.document;
+      
+      if (!animDoc) {
+        throw new Error('Could not access animation iframe');
+      }
+
+      // Get the animation container
+      const container = animDoc.querySelector('.container');
+      if (!container) {
+        throw new Error('Animation container not found');
+      }
+
+      // Calculate frame count
+      const frameCount = Math.ceil((duration / 1000) * fps);
+      const frameDelay = duration / frameCount;
+
+      status.textContent = `⏳ Capturing ${frameCount} frames...`;
+
+      // Capture frames
+      const frames = [];
+      for (let i = 0; i < frameCount; i++) {
+        try {
+          const canvas = await html2canvas(container, {
+            width: width,
+            height: height,
+            backgroundColor: null, // transparent
+            scale: 1,
+            logging: false,
+            allowTaint: true,
+            useCORS: true
+          });
+          frames.push(canvas);
+          
+          const pct = Math.round((i / frameCount) * 100);
+          status.textContent = `⏳ Capturing frames... ${pct}%`;
+        } catch (e) {
+          console.warn(`Frame ${i} capture failed:`, e);
+        }
+
+        // Wait for animation to progress
+        await new Promise(r => setTimeout(r, frameDelay));
+      }
+
+      if (frames.length === 0) {
+        throw new Error('No frames captured');
+      }
+
+      status.textContent = `🎬 Encoding GIF (${frames.length} frames)...`;
+
+      // Encode to GIF
+      const gif = new GIF({
+        workers: 2,
+        quality: 10,
+        width: width,
+        height: height,
+        workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+      });
+
+      frames.forEach((canvas) => {
+        gif.addFrame(canvas, { delay: frameDelay });
+      });
+
+      gif.on('finished', function(blob) {
+        // Download
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'mesh-ai-hero-light.gif';
+        link.click();
+        URL.revokeObjectURL(url);
+
+        status.className = 'status show success';
+        status.textContent = `✅ GIF exported! (${(blob.size / 1024 / 1024).toFixed(2)}MB)`;
+        btn.disabled = false;
+      });
+
+      gif.on('progress', (pct) => {
+        status.textContent = `🎬 Encoding... ${Math.round(pct * 100)}%`;
+      });
+
+      gif.render();
+
+    } catch (e) {
+      status.className = 'status show error';
+      status.textContent = `❌ Error: ${e.message}`;
+      console.error(e);
+      btn.disabled = false;
+    }
+  }
+</script>
+
+</body>
+</html>
