@@ -2216,6 +2216,17 @@ document.getElementById('pw-input')?.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') checkPassword();
 });
 
+// Expose functions needed by inline onclick handlers
+window.beginAssessment   = beginAssessment;
+window.generateProposalPdf = generateProposalPdf;
+window.goBack            = goBack;
+window.goNext            = goNext;
+window.selectChoice      = selectChoice;
+window.updateSlider      = updateSlider;
+window.toggleTag         = toggleTag;
+window.handleQ22Submit   = handleQ22Submit;
+window.submitAEDiscovery = submitAEDiscovery;
+
 } // end quizInit
 
 if (document.readyState === 'loading') {
