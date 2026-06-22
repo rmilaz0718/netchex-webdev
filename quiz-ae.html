@@ -1096,14 +1096,10 @@
         </div>
     </section>
 
-    <!-- ══ AE NOTES / DEAL CONTEXT ══ -->
-    <section style="background:#fff;padding:40px 40px;border-top:1px solid #e2e8f0;" id="ae-context-section">
-        <div style="max-width:1100px;margin:0 auto;">
-            <p style="font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#F59E0B;margin-bottom:10px;">AE Context — Internal Only</p>
-            <h2 style="font-family:'Inter',sans-serif;font-size:20px;font-weight:800;color:#0d1f4e;margin-bottom:20px;">Discovery Summary</h2>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" id="ae-context-grid"></div>
-        </div>
-    </section>
+    <!-- AE context grid (hidden, used for PDF data only) -->
+    <div style="display:none;" id="ae-context-section">
+        <div id="ae-context-grid"></div>
+    </div>
 
     <!-- ══ GENERATE PDF CTA ══ -->
     <section style="background:#0d1f4e;padding:64px 40px;text-align:center;">
@@ -2251,8 +2247,8 @@ window.goNext            = goNext;
 window.selectChoice      = selectChoice;
 window.updateSlider      = updateSlider;
 window.toggleTag         = toggleTag;
-window.handleQ22Submit   = handleQ22Submit;
-window.submitAEDiscovery = submitAEDiscovery;
+window.handleQ22Submit   = function() { goNext(); };
+window.submitAEDiscovery = function() { goNext(); };
 
 } // end quizInit
 
