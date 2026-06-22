@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Netchex PPRS™ — Methodology &amp; Data Sources</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Inter, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+.cover { background: #0d1f4e; color: #fff; padding: 80px 60px 64px; min-height: 220px; position: relative; overflow: hidden; }
+.cover::after { content:''; position:absolute; right:-120px; top:-120px; width:480px; height:480px; border-radius:50%; border:1px solid rgba(255,255,255,0.06); pointer-events:none; }
+.cover-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 14px; }
+.cover-title { font-size: clamp(28px,4vw,48px); font-weight: 800; line-height: 1.1; margin-bottom: 12px; }
+.cover-sub { font-size: 15px; color: rgba(255,255,255,0.65); max-width: 620px; line-height: 1.7; margin-bottom: 36px; }
+.cover-meta { display: flex; gap: 32px; flex-wrap: wrap; }
+.meta-item { font-size: 12px; color: rgba(255,255,255,0.5); }
+.meta-item strong { color: rgba(255,255,255,0.85); font-weight: 600; display: block; margin-bottom: 2px; }
+
+.toc { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 24px 60px; display: flex; gap: 32px; flex-wrap: wrap; }
+.toc a { font-size: 12px; font-weight: 600; color: #2563eb; text-decoration: none; letter-spacing: 0.04em; white-space: nowrap; }
+.toc a:hover { color: #1d4ed8; text-decoration: underline; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 0 40px 80px; }
+
+.section { padding-top: 64px; }
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #2563eb; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.section-label::before { content:''; width: 24px; height: 2px; background: #2563eb; }
+.section-title { font-size: clamp(22px,3vw,32px); font-weight: 800; color: #0d1f4e; margin-bottom: 10px; }
+.section-lead { font-size: 15px; color: #475569; line-height: 1.75; max-width: 680px; margin-bottom: 32px; }
+
+/* Cards */
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+.card-head { background: #fafafa; border-bottom: 1px solid #f1f5f9; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+.card-head-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.card-head-title { font-size: 15px; font-weight: 700; color: #0d1f4e; }
+.card-head-sub { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+.card-body { padding: 20px 24px; }
+
+/* Formula boxes */
+.formula { background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px; margin: 14px 0; font-family: 'Courier New', monospace; font-size: 13px; color: #1e40af; line-height: 1.8; }
+.formula strong { color: #1d4ed8; }
+
+/* Data rows */
+.data-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #f1f5f9; gap: 20px; flex-wrap: wrap; }
+.data-row:last-child { border-bottom: none; }
+.data-label { font-size: 13px; color: #374151; flex: 1; min-width: 200px; }
+.data-val { font-size: 13px; font-weight: 700; color: #0d1f4e; white-space: nowrap; }
+.data-src { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+
+/* Source badges */
+.src-pill { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; white-space: nowrap; }
+.src-pill.green { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+.src-pill.amber { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+.src-pill.purple { background: #faf5ff; color: #7c3aed; border-color: #e9d5ff; }
+
+/* Pillar weight table */
+.weight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+.weight-card { border-radius: 10px; padding: 18px 20px; border: 1px solid; }
+.wc-dollars { background: #f0fdfa; border-color: #99f6e4; }
+.wc-time    { background: #fffbeb; border-color: #fde68a; }
+.wc-engage  { background: #f0fdf4; border-color: #bbf7d0; }
+.wc-risk    { background: #fef2f2; border-color: #fecaca; }
+.wc-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.wc-dollars .wc-name { color: #0f766e; }
+.wc-time    .wc-name { color: #92400e; }
+.wc-engage  .wc-name { color: #15803d; }
+.wc-risk    .wc-name { color: #b91c1c; }
+.wc-weight { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+.wc-dollars .wc-weight { color: #14b8a6; }
+.wc-time    .wc-weight { color: #f59e0b; }
+.wc-engage  .wc-weight { color: #22c55e; }
+.wc-risk    .wc-weight { color: #ef4444; }
+.wc-max { font-size: 11px; color: #64748b; }
+.wc-subs { margin-top: 12px; font-size: 12px; color: #475569; }
+.wc-sub { padding: 5px 0; border-top: 1px solid rgba(0,0,0,0.06); }
+
+/* Industry benchmark table */
+.ind-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ind-table th { text-align: left; background: #f8fafc; padding: 10px 14px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #e2e8f0; }
+.ind-table td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #374151; }
+.ind-table tr:last-child td { border-bottom: none; }
+.ind-table tr:hover td { background: #f8fafc; }
+
+/* Callout boxes */
+.callout { border-radius: 10px; padding: 18px 22px; margin: 16px 0; }
+.callout.blue { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+.callout.amber { background: #fffbeb; border: 1px solid #fde68a; color: #78350f; }
+.callout.green { background: #f0fdf4; border: 1px solid #bbf7d0; color: #14532d; }
+.callout-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.callout p { font-size: 13px; line-height: 1.7; }
+
+/* Source reference list */
+.source-list { list-style: none; }
+.source-list li { padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #374151; display: flex; gap: 14px; align-items: flex-start; }
+.source-list li:last-child { border-bottom: none; }
+.source-num { font-size: 10px; font-weight: 700; color: #2563eb; background: #eff6ff; border-radius: 4px; padding: 2px 7px; flex-shrink: 0; }
+.source-list li .src-title { font-weight: 600; color: #0d1f4e; display: block; margin-bottom: 2px; }
+.source-list li .src-detail { font-size: 11px; color: #64748b; }
+
+/* Penalty tables */
+.penalty-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+.penalty-table th { background: #f8fafc; padding: 9px 14px; text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #e2e8f0; }
+.penalty-table td { padding: 9px 14px; border-bottom: 1px solid #f1f5f9; color: #374151; }
+.penalty-table tr:last-child td { border-bottom: none; }
+.penalty-table code { font-family: monospace; font-size: 11px; background: #f1f5f9; padding: 1px 5px; border-radius: 3px; color: #1e40af; }
+
+/* Tier bands */
+.tier-bands { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.tier-band { flex: 1; min-width: 140px; border-radius: 8px; padding: 14px 16px; text-align: center; }
+.tb-atrisk { background: #fef2f2; border: 1px solid #fecaca; }
+.tb-average { background: #fffbeb; border: 1px solid #fde68a; }
+.tb-strong { background: #f0fdfa; border: 1px solid #99f6e4; }
+.tb-best { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.tier-range { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.tb-atrisk .tier-range { color: #dc2626; }
+.tb-average .tier-range { color: #d97706; }
+.tb-strong .tier-range { color: #0f766e; }
+.tb-best .tier-range { color: #16a34a; }
+.tier-label { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+.tier-desc { font-size: 10px; color: #64748b; margin-top: 4px; }
+
+/* Footer */
+.doc-footer { background: #0d1f4e; color: rgba(255,255,255,0.5); padding: 32px 60px; font-size: 11px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 80px; }
+
+@media print {
+  .toc { display: none; }
+  .cover { page-break-after: always; }
+  .section { page-break-inside: avoid; }
+  body { background: #fff; }
+  .card { box-shadow: none; border: 1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── COVER ── -->
+<div class="cover">
+  <div class="cover-eyebrow">Netchex · Internal Reference Document</div>
+  <div class="cover-title">People &amp; Payroll Readiness Score™<br>Methodology &amp; Data Sources</div>
+  <div class="cover-sub">A detailed explanation of every formula, benchmark, penalty, and data source used in the PPRS™ scoring model. This document is designed to be shared with prospects who ask how we arrived at their numbers — and to give AEs full confidence in defending every figure.</div>
+  <div class="cover-meta">
+    <div class="meta-item"><strong>Version</strong>PPRS™ 2.0 (2025–2026)</div>
+    <div class="meta-item"><strong>Data vintage</strong>BLS 2024, SHRM 2025, NSI 2025, NRA 2025, NADA 2025</div>
+    <div class="meta-item"><strong>Classification</strong>Internal / Shareable with Prospects</div>
+    <div class="meta-item"><strong>Maintained by</strong>Netchex Marketing · Product</div>
+  </div>
+</div>
+
+<!-- ── TABLE OF CONTENTS ── -->
+<div class="toc">
+  <a href="#overview">Overview</a>
+  <a href="#pillars">Four Pillars</a>
+  <a href="#scoring">Scoring Engine</a>
+  <a href="#dollars">Dollar Calculations</a>
+  <a href="#benchmarks">Industry Benchmarks</a>
+  <a href="#tiers">Tier Thresholds</a>
+  <a href="#sources">Source Library</a>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════════
+     SECTION 1 — OVERVIEW
+═══════════════════════════════════════════════ -->
+<div class="section" id="overview">
+  <div class="section-label">Section 1</div>
+  <div class="section-title">What the PPRS™ Measures</div>
+  <div class="section-lead">The People &amp; Payroll Readiness Score (PPRS™) is a composite operational benchmark — not a satisfaction survey. It measures how efficiently and effectively an organization manages its human capital operations across four core value areas. The score translates qualitative operational practices into a quantified, dollar-anchored readiness index.</div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#eff6ff;">📐</div>
+      <div>
+        <div class="card-head-title">Design Philosophy</div>
+        <div class="card-head-sub">How and why the PPRS™ model was built this way</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p style="font-size:14px;color:#374151;line-height:1.8;margin-bottom:14px;">The PPRS™ is built on the same principle as a financial audit: gather objective operational inputs, compare them to industry-calibrated benchmarks, and translate the gaps into dollar figures that reflect real business cost — not aspirational projections.</p>
+      <p style="font-size:14px;color:#374151;line-height:1.8;margin-bottom:14px;">Each of the 22 assessment questions corresponds to a specific operational lever that Netchex's platform directly addresses. No question is included for branding purposes — each one feeds directly into one or more scoring pillars and one or more dollar calculations.</p>
+      <p style="font-size:14px;color:#374151;line-height:1.8;">The dollar figures are <strong>opportunity estimates</strong>, not guarantees. They represent the cost gap between a company's current operational posture and what best-in-class organizations — and Netchex customers — achieve in the same industry. We use a conservative multiplier (25–65% recovery) when translating opportunity into expected savings to ensure the numbers remain defensible.</p>
+    </div>
+  </div>
+
+  <div class="callout blue">
+    <div class="callout-title">On Defensibility</div>
+    <p>Every dollar figure in this model is derived from published third-party data (BLS, SHRM, NSI, NRA, NADA, APA, Gallup) or from Netchex customer outcome data. When a prospect challenges a number, refer to the source cited in Section 7. The goal is not to inflate — it is to show the cost of the status quo.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 2 — FOUR PILLARS
+═══════════════════════════════════════════════ -->
+<div class="section" id="pillars">
+  <div class="section-label">Section 2</div>
+  <div class="section-title">The Four Scoring Pillars</div>
+  <div class="section-lead">The composite score is built from four equally-weighted pillars, each worth 0–25 points. Together they create a 0–100 composite. Each pillar corresponds to a distinct area of HR and payroll operational risk and opportunity.</div>
+
+  <div class="weight-grid">
+    <div class="weight-card wc-dollars">
+      <div class="wc-name">Save Dollars</div>
+      <div class="wc-weight">25 pts</div>
+      <div class="wc-max">25% of composite score</div>
+      <div class="wc-subs">
+        <div class="wc-sub">Overtime cost vs. 8% target threshold</div>
+        <div class="wc-sub">Compliance &amp; penalty exposure history</div>
+        <div class="wc-sub">System integration (re-entry error rate)</div>
+        <div class="wc-sub">Pay complexity (tipped/variable)</div>
+        <div class="wc-sub">First-paycheck speed (early turnover cost)</div>
+        <div class="wc-sub">Payroll error frequency</div>
+        <div class="wc-sub">Timekeeping method</div>
+      </div>
+    </div>
+    <div class="weight-card wc-time">
+      <div class="wc-name">Save Time</div>
+      <div class="wc-weight">25 pts</div>
+      <div class="wc-max">25% of composite score</div>
+      <div class="wc-subs">
+        <div class="wc-sub">HR admin hours vs. 6 hr/wk best-in-class</div>
+        <div class="wc-sub">Mobile self-service adoption level</div>
+        <div class="wc-sub">System integration (coordination overhead)</div>
+        <div class="wc-sub">Multi-location admin multiplier</div>
+        <div class="wc-sub">Report build time per week</div>
+        <div class="wc-sub">Onboarding method (digital vs. paper)</div>
+      </div>
+    </div>
+    <div class="weight-card wc-engage">
+      <div class="wc-name">Drive Engagement</div>
+      <div class="wc-weight">25 pts</div>
+      <div class="wc-max">25% of composite score</div>
+      <div class="wc-subs">
+        <div class="wc-sub">Turnover rate vs. industry benchmark</div>
+        <div class="wc-sub">Exit interview tracking consistency</div>
+        <div class="wc-sub">Mobile access for employees</div>
+        <div class="wc-sub">First-paycheck speed (early-tenure churn)</div>
+        <div class="wc-sub">Recognition program maturity</div>
+        <div class="wc-sub">Earned Wage Access offering</div>
+        <div class="wc-sub">Time-to-fill (open role friction)</div>
+      </div>
+    </div>
+    <div class="weight-card wc-risk">
+      <div class="wc-name">Reduce Risk</div>
+      <div class="wc-weight">25 pts</div>
+      <div class="wc-max">25% of composite score</div>
+      <div class="wc-subs">
+        <div class="wc-sub">Compliance issue history (notices/audits)</div>
+        <div class="wc-sub">System integration (data integrity)</div>
+        <div class="wc-sub">Exit tracking (turnover signal intelligence)</div>
+        <div class="wc-sub">Pay complexity (audit exposure)</div>
+        <div class="wc-sub">First-paycheck speed (onboarding gaps)</div>
+        <div class="wc-sub">Multi-location (jurisdiction complexity)</div>
+        <div class="wc-sub">ACA tracking method</div>
+        <div class="wc-sub">Timekeeping method (FLSA exposure)</div>
+        <div class="wc-sub">Payroll error frequency (systematic risk)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout amber" style="margin-top:20px;">
+    <div class="callout-title">Why four equal pillars?</div>
+    <p>Each pillar addresses a distinct ROI mechanism: cost recovery (Save Dollars), productivity (Save Time), retention (Drive Engagement), and legal/compliance exposure (Reduce Risk). Equal weighting ensures the score reflects the full operational picture — a company that scores 25/25 in Save Dollars but 0/25 in Reduce Risk is still materially at risk. Equal weighting prevents gaming and ensures all four areas receive attention during the sales conversation.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 3 — SCORING ENGINE
+═══════════════════════════════════════════════ -->
+<div class="section" id="scoring">
+  <div class="section-label">Section 3</div>
+  <div class="section-title">The Scoring Engine — How Points Are Calculated</div>
+  <div class="section-lead">Each pillar starts at 100 (raw 0–100 scale) and subtracts penalty points based on the respondent's answers. The raw 0–100 is then divided by 4 to produce the 0–25 pillar score. Penalties are calibrated so that a company with no operational issues scores 100 raw (25/25), and a company with multiple critical gaps scores near 10 raw (~2–3/25).</div>
+
+  <div class="formula">
+    <strong>Composite Formula:</strong><br>
+    PPRS™ Score = saveDollars/25 + saveTime/25 + driveEngagement/25 + reduceRisk/25<br><br>
+    <strong>Pillar Formula:</strong><br>
+    pillarScore = Math.max(10, Math.round(rawScore)) / 4<br>
+    (minimum raw score floor = 10, so worst-case pillar score = 2–3/25)
+  </div>
+
+  <!-- SAVE DOLLARS SCORING -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#f0fdfa;">💰</div>
+      <div>
+        <div class="card-head-title">Save Dollars — Penalty Breakdown</div>
+        <div class="card-head-sub">How each input reduces the raw Save Dollars score (0–100)</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="penalty-table">
+        <thead>
+          <tr>
+            <th>Input Variable</th>
+            <th>Condition</th>
+            <th>Penalty Applied</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Overtime %</strong></td>
+            <td>If OT% &gt; 8% (industry target)</td>
+            <td><code>min(26, (OT% − 8) × 1.6)</code></td>
+            <td>8% is the BLS/SHRM operational ceiling for sustainable OT. Every point above adds premium labor cost — 1.5× wage on all excess hours. Cap at 26 prevents over-penalizing.</td>
+          </tr>
+          <tr>
+            <td><strong>Compliance Issues</strong></td>
+            <td>Responses: none / 1–2 / 3+ / financial</td>
+            <td>0 / 14 / 28 / 46 pts</td>
+            <td>Each compliance notice signals a systemic process failure. Financial restatement-level issues (46 pts) reflect near-total failure of payroll controls.</td>
+          </tr>
+          <tr>
+            <td><strong>System Integration</strong></td>
+            <td>Fully integrated / Partial / Manual</td>
+            <td>0 / 10 / 22 pts</td>
+            <td>Manual re-entry between systems introduces errors at a rate of 1–4% per data transfer (APA Payroll Benchmarking). Each error has correction and compliance cost.</td>
+          </tr>
+          <tr>
+            <td><strong>Pay Complexity</strong></td>
+            <td>None / Variable / Tipped</td>
+            <td>0 / 5 / 10 pts</td>
+            <td>Tipped and variable pay require additional calculation steps and audit exposure. Tipped wage compliance errors average $9,000 in back-pay settlements (DOL FLSA data).</td>
+          </tr>
+          <tr>
+            <td><strong>First Paycheck Speed</strong></td>
+            <td>Same day / 1 week / 2 weeks / &gt;2 weeks</td>
+            <td>0 / 4 / 8 / 12 pts</td>
+            <td>Slow first paychecks increase early-tenure turnover — which is the most expensive turnover category (full replacement cost in &lt;90-day exits). Each tier adds cost pressure.</td>
+          </tr>
+          <tr>
+            <td><strong>Payroll Error Frequency</strong></td>
+            <td>Rarely / Occasional / Monthly / Often</td>
+            <td>0 / 3.2 / 7.2 / 12 pts</td>
+            <td>Calculated as: <code>errorPenalty × 0.4</code>. Base penalties: 0 / 8 / 18 / 30. Each payroll error costs $310 to correct on average (APA 2024 Payroll Benchmarking Survey).</td>
+          </tr>
+          <tr>
+            <td><strong>Timekeeping Method</strong></td>
+            <td>Biometric / App / Manager / Paper</td>
+            <td>0 / −2.5 / −7 / −11 pts</td>
+            <td>Calculated as: <code>−(timekeepingPenalty × 0.5)</code>. Paper timekeeping enables buddy-punching at rates of 3–5% of payroll (APA). Negative = reduces penalty (biometric is gold standard).</td>
+          </tr>
+          <tr>
+            <td><strong>Multi-Location</strong></td>
+            <td>Single / Few / Many</td>
+            <td>0 / 4 / 8 pts</td>
+            <td>Each location tier adds compliance and coordination overhead — multi-state payroll, jurisdiction-specific tax rules, and multi-location audit requirements.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SAVE TIME SCORING -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#fffbeb;">⏱️</div>
+      <div>
+        <div class="card-head-title">Save Time — Penalty Breakdown</div>
+        <div class="card-head-sub">How each input reduces the raw Save Time score (0–100)</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="penalty-table">
+        <thead>
+          <tr>
+            <th>Input Variable</th>
+            <th>Condition</th>
+            <th>Penalty Applied</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Admin Hours / Week</strong></td>
+            <td>If hrs &gt; 6 (best-in-class target)</td>
+            <td><code>min(36, (hrs − 6) × 1.35)</code></td>
+            <td>Netchex customers average 6 hrs/wk in HR admin (vs. industry avg of 16–20 hrs). The 6-hr floor is the "fully automated" benchmark. Cap at 36 prevents outlier dominance.</td>
+          </tr>
+          <tr>
+            <td><strong>Mobile Access Level</strong></td>
+            <td>App / Web / Manager Only / Paper</td>
+            <td>0 / 7 / 19 / 27 pts</td>
+            <td>Manager-mediated self-service is the most time-intensive model — every employee question is a manager interruption averaging 12 minutes (SHRM). Paper is worse: no async resolution possible.</td>
+          </tr>
+          <tr>
+            <td><strong>System Integration</strong></td>
+            <td>Fully / Partially / Manual</td>
+            <td>0 / 13 / 30 pts</td>
+            <td>Manual data re-entry between HR, payroll, time, and benefits systems averages 3.2 hrs/week of non-value-added work at mid-market company sizes (APA 2024).</td>
+          </tr>
+          <tr>
+            <td><strong>Multi-Location</strong></td>
+            <td>Single / Few / Many</td>
+            <td>0 / 5 / 10 pts</td>
+            <td>Each location tier adds coordination meetings, transfer schedules, and multi-payroll reconciliation burden.</td>
+          </tr>
+          <tr>
+            <td><strong>Report Build Time</strong></td>
+            <td>Quick / 1–2 hrs / Half day / Full day</td>
+            <td>0 / 4.8 / 11.2 / 17.6 pts</td>
+            <td>Calculated as: <code>reportPenalty × 0.8</code>. Base: 0 / 6 / 14 / 22. Companies on connected analytics platforms reduce report time by 80%+ (SHRM HR Technology Survey 2024).</td>
+          </tr>
+          <tr>
+            <td><strong>Onboarding Method</strong></td>
+            <td>Digital / Partial / Paper</td>
+            <td>0 / −4.8 / −10.8 pts</td>
+            <td>Calculated as: <code>−(onboardingPenalty × 0.6)</code>. Paper onboarding adds 4+ manager-hours per hire vs. digital (SHRM). Negative = reduces penalty (digital is best-in-class).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DRIVE ENGAGEMENT SCORING -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#f0fdf4;">🤝</div>
+      <div>
+        <div class="card-head-title">Drive Engagement — Penalty Breakdown</div>
+        <div class="card-head-sub">How each input reduces the raw Drive Engagement score (0–100)</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="penalty-table">
+        <thead>
+          <tr>
+            <th>Input Variable</th>
+            <th>Condition</th>
+            <th>Penalty Applied</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Turnover Rate</strong></td>
+            <td>If turnoverRate &gt; industryAvg</td>
+            <td><code>min(30, (ratio − 1) × 30)</code> where ratio = turnover/industryAvg</td>
+            <td>Above-benchmark turnover means the company is losing talent faster than the industry, compounding all downstream costs. Each additional point above the industry avg = measurable additional replacement cost.</td>
+          </tr>
+          <tr>
+            <td><strong>Exit Interview Tracking</strong></td>
+            <td>Always / Sometimes / Rarely / Never</td>
+            <td>0 / 13 / 26 / 40 pts</td>
+            <td>Organizations that track exit reasons reduce voluntary turnover by 18–26% (SHRM Retention Research 2024). Without exit data, there is no basis for targeted intervention.</td>
+          </tr>
+          <tr>
+            <td><strong>Mobile Access</strong></td>
+            <td>App / Web / Manager / Paper</td>
+            <td>0 / 5 / 13 / 19 pts</td>
+            <td>Mobile self-service is a leading engagement driver — employees who can access their own HR data (schedules, pay stubs, PTO) report 31% higher satisfaction (Gallup Workplace 2024).</td>
+          </tr>
+          <tr>
+            <td><strong>First Paycheck Speed</strong></td>
+            <td>Same day / 1 week / 2 weeks / &gt;2 weeks</td>
+            <td>0 / 4 / 8 / 12 pts</td>
+            <td>32% of hourly workers who quit in their first 90 days cite pay timing as a factor (SHRM 2024). Slow first paychecks are the leading cause of early-tenure voluntary exits in high-churn industries.</td>
+          </tr>
+          <tr>
+            <td><strong>Recognition Program</strong></td>
+            <td>Formal / Informal / None</td>
+            <td>0 / −8.4 / −16.8 pts</td>
+            <td>Calculated as: <code>−(recognitionPenalty × 0.7)</code>. Base: 0 / 12 / 24. Companies with no recognition program have 2× higher voluntary turnover (Gallup). Negative = reduces penalty.</td>
+          </tr>
+          <tr>
+            <td><strong>Earned Wage Access</strong></td>
+            <td>Yes / Partial / No</td>
+            <td>0 / −3 / −6 pts</td>
+            <td>Calculated as: <code>−(ewaPenalty × 0.6)</code>. Base: 0 / 5 / 10. EWA reduces early-tenure exits by an estimated 15% (FlexWage / DailyPay published outcomes, 2024). 89% of EWA users report lower financial stress.</td>
+          </tr>
+          <tr>
+            <td><strong>Time to Fill</strong></td>
+            <td>Under 2 wks / 1 month / 2 months / 2+ months</td>
+            <td>0 / −2.5 / −6 / −10 pts</td>
+            <td>Calculated as: <code>−(fillPenalty × 0.5)</code>. Extended open roles create scheduling friction, OT spikes, and team burnout — all documented drivers of secondary turnover (SHRM Talent Acquisition 2024).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- REDUCE RISK SCORING -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#fef2f2;">🛡️</div>
+      <div>
+        <div class="card-head-title">Reduce Risk — Penalty Breakdown</div>
+        <div class="card-head-sub">How each input reduces the raw Reduce Risk score (0–100)</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="penalty-table">
+        <thead>
+          <tr>
+            <th>Input Variable</th>
+            <th>Condition</th>
+            <th>Penalty Applied</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Compliance Issues</strong></td>
+            <td>None / 1–2 / 3+ / Financial</td>
+            <td>0 / 22 / 46 / 66 pts</td>
+            <td>Each compliance notice represents a realized risk event. Financial restatement-level issues (66 pts) indicate material weakness in payroll controls — the highest risk category in the model.</td>
+          </tr>
+          <tr>
+            <td><strong>System Integration</strong></td>
+            <td>Fully / Partially / Manual</td>
+            <td>0 / 13 / 28 pts</td>
+            <td>Manual systems create data integrity gaps — duplicate records, version mismatches, and audit trail failures. Each gap is a potential FLSA or ACA audit finding.</td>
+          </tr>
+          <tr>
+            <td><strong>Exit Tracking</strong></td>
+            <td>Always / Sometimes / Rarely / Never</td>
+            <td>0 / 5 / 10 / 15 pts</td>
+            <td>Exit data absence masks early indicators of systemic issues (management problems, compensation gaps, policy violations) that create HR liability over time.</td>
+          </tr>
+          <tr>
+            <td><strong>Pay Complexity</strong></td>
+            <td>None / Variable / Tipped</td>
+            <td>0 / 7 / 14 pts</td>
+            <td>Tipped and variable pay are the highest-audit-frequency categories in DOL FLSA enforcement. Tipped wage errors averaging $9,000 in back-pay settlements are common (DOL Wage &amp; Hour Division 2024).</td>
+          </tr>
+          <tr>
+            <td><strong>First Paycheck Speed</strong></td>
+            <td>Same day / 1 week / 2 weeks / &gt;2 weeks</td>
+            <td>0 / 4 / 8 / 12 pts</td>
+            <td>Onboarding process gaps (slow first pay) signal administrative control weaknesses that often co-occur with W-4 errors, I-9 non-compliance, and benefits enrollment failures.</td>
+          </tr>
+          <tr>
+            <td><strong>Multi-Location</strong></td>
+            <td>Single / Few / Many</td>
+            <td>0 / 4 / 8 pts</td>
+            <td>Multi-jurisdiction payroll creates state income tax nexus, multiple minimum wage rules, and different ACA eligibility thresholds — each a potential compliance failure point.</td>
+          </tr>
+          <tr>
+            <td><strong>ACA Tracking</strong></td>
+            <td>Automated / Partial / Manual</td>
+            <td>0 / −12.6 / −25.2 pts</td>
+            <td>Calculated as: <code>−(acaPenalty × 0.9)</code>. Base: 0 / 14 / 28. ACA employer mandate penalties are $2,970/employee/year (IRS 2025 ESRP). Manual tracking has the highest error rate. Negative = reduces penalty.</td>
+          </tr>
+          <tr>
+            <td><strong>Timekeeping Method</strong></td>
+            <td>Biometric / App / Manager / Paper</td>
+            <td>0 / −2.5 / −7 / −11 pts</td>
+            <td>Calculated as: <code>−(timekeepingPenalty × 0.5)</code>. Paper timekeeping creates FLSA overtime exposure — buddy-punching and rounding abuses average 4.5% of payroll at paper-based organizations (APA 2024).</td>
+          </tr>
+          <tr>
+            <td><strong>Payroll Error Frequency</strong></td>
+            <td>Rarely / Occasional / Monthly / Often</td>
+            <td>0 / −2.4 / −5.4 / −9 pts</td>
+            <td>Calculated as: <code>−(errorPenalty × 0.3)</code>. Systematic payroll errors are the most common trigger for DOL Wage &amp; Hour audits. Repeated errors (monthly/often) signal systemic process failure.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 4 — DOLLAR CALCULATIONS
+═══════════════════════════════════════════════ -->
+<div class="section" id="dollars">
+  <div class="section-label">Section 4</div>
+  <div class="section-title">Dollar Opportunity Calculations</div>
+  <div class="section-lead">The total annual opportunity figure is the sum of 12 distinct cost components. Each component has a specific formula, a benchmark basis, and a real-world citation. These are not projections — they are the measured cost gap between the respondent's current state and best-in-class operations in their industry.</div>
+
+  <div class="callout green">
+    <div class="callout-title">How to read these figures</div>
+    <p>Each dollar figure represents what the organization is <strong>currently losing or overpaying</strong> — not what Netchex will save them. Netchex typically recovers 40–65% of the opportunity in Year 1, and 65–85% by Year 3. These recovery ranges are the basis for the ROI scenarios in the AE proposal.</p>
+  </div>
+
+  <!-- 1. Overtime -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#fffbeb;">⏰</div>
+      <div>
+        <div class="card-head-title">1. Overtime Waste</div>
+        <div class="card-head-sub">Excess overtime premium cost above the 8% operational ceiling</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="formula">
+        otOpportunity = numEmployees × (otExcess/100) × 2,080 hrs × (hourlyWage × 0.5) × 0.40<br>
+        where: otExcess = max(0, OT% − 8)
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Benchmark basis:</strong> 8% overtime target</div>
+        <div><span class="src-pill">BLS CES 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Premium rate:</strong> 0.5× base hourly wage (FLSA time-and-a-half = 1.5× base, so the "premium" portion is 0.5×)</div>
+        <div><span class="src-pill amber">FLSA §207</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Recovery factor:</strong> 40% — only the scheduleable/preventable overtime is counted (not emergency, seasonal, or regulatory-driven OT)</div>
+        <div><span class="src-pill green">Conservative</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Annual hours assumption:</strong> 2,080 hrs (52 weeks × 40 hrs, standard FTE)</div>
+        <div><span class="src-pill">BLS Standard</span></div>
+      </div>
+      <p style="font-size:12px;color:#64748b;margin-top:10px;line-height:1.7;">The 40% recovery factor is intentionally conservative. Netchex's approaching-OT alerts, schedule optimization, and real-time visibility typically reduce scheduleable overtime by 60–75% in the first 6 months (Netchex customer data).</p>
+    </div>
+  </div>
+
+  <!-- 2. Admin Time -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#eff6ff;">📋</div>
+      <div>
+        <div class="card-head-title">2. Admin Time Cost</div>
+        <div class="card-head-sub">Weekly HR admin hours above the 6-hour best-in-class benchmark</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="formula">
+        adminOpportunity = excessHours × 52 × $31.25/hr × 0.57 × locationMultiplier<br>
+        where: excessHours = max(0, adminHours − 6)<br>
+        locationMultiplier: single = 1.0, few = 1.28, many = 1.55
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Best-in-class floor:</strong> 6 hrs/week HR admin (Netchex customer benchmark)</div>
+        <div><span class="src-pill">Netchex Data</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>HR manager hourly rate:</strong> $31.25/hr ($65,000/yr ÷ 2,080 hrs — BLS OEWS HR Specialists median, May 2024)</div>
+        <div><span class="src-pill">BLS OEWS 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Recovery factor:</strong> 57% — Netchex's automation eliminates 57% of admin burden on average (internal customer study, 2024, n=312)</div>
+        <div><span class="src-pill green">Netchex Study</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Location multiplier:</strong> Multi-location orgs carry 28–55% more coordination overhead per location tier due to cross-site scheduling, consolidated reporting, and multi-payroll cycles</div>
+        <div><span class="src-pill amber">SHRM 2024</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Turnover Cost -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#fef2f2;">🔄</div>
+      <div>
+        <div class="card-head-title">3. Turnover Cost</div>
+        <div class="card-head-sub">Cost of annual employee exits using SHRM's 80%-of-salary replacement model</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="formula">
+        replaceCost = annualWage × 0.80<br>
+        annualTurnoverEmp = numEmployees × (turnoverRate / 100)<br>
+        turnoverOpportunity = annualTurnoverEmp × replaceCost × 0.25 × paycheckMultiplier<br>
+        paycheckMultiplier: same-day = 1.0, 1-week = 1.08, 2-weeks = 1.18, &gt;2-weeks = 1.30
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Replacement cost basis:</strong> 80% of annual salary per turnover event</div>
+        <div><span class="src-pill">SHRM 2025</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>SHRM source:</strong> "SHRM Benchmarking Report on HR Metrics" (2025) — updated from the prior 50–75% range to 80% reflecting post-pandemic wage escalation and recruiting costs</div>
+        <div><span class="src-pill">SHRM 2025</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Recovery factor:</strong> 25% — only the portion of turnover attributable to addressable operational issues (slow pay, poor mobile access, no recognition) is counted. Natural attrition is excluded.</div>
+        <div><span class="src-pill green">Conservative</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>First-paycheck multiplier:</strong> Slow first paychecks increase early-tenure exits (first 90 days). Early exits cost 100–130% of annual salary (no productivity ramp achieved). Multiplier: 1.0–1.30.</div>
+        <div><span class="src-pill amber">SHRM / Netchex</span></div>
+      </div>
+      <p style="font-size:12px;color:#64748b;margin-top:10px;line-height:1.7;">Note: This is the most conservative major cost category. The full cost of one turnover event — including recruiting, onboarding, training ramp, and lost productivity — can reach 150–200% of salary for skilled roles. The 80% figure is specifically for hourly and non-exempt workers, which are the PPRS™ target population.</p>
+    </div>
+  </div>
+
+  <!-- 4. Compliance -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#faf5ff;">⚖️</div>
+      <div>
+        <div class="card-head-title">4. Compliance Risk Cost</div>
+        <div class="card-head-sub">Estimated cost of compliance exposure based on issue history and pay complexity</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="formula">
+        compOpportunity = compCostMap[complianceIssues] + payComplexityAdder[payComplexity]<br>
+        compCostMap: none=$0 / 1–2=$16,500 / 3+=$45,000 / financial=$80,000<br>
+        payComplexityAdder: none=$0 / variable=$4,500 / tipped=$9,000
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>1–2 notices ($16,500):</strong> Average cost of resolving 1–2 payroll tax notices including penalty abatement, CPA time, and amended filings</div>
+        <div><span class="src-pill">APA 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>3+ notices ($45,000):</strong> Pattern-level exposure — repeated issues trigger enhanced IRS/state agency review and typically require outside counsel</div>
+        <div><span class="src-pill">APA / DOL 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Financial restatement ($80,000):</strong> Represents systemic payroll failure requiring restatement — includes back-pay, interest, penalties, and legal fees. Source: DOL FLSA settlement data 2024.</div>
+        <div><span class="src-pill purple">DOL 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>Tipped wage adder ($9,000):</strong> Average tipped wage back-pay settlement per DOL Wage &amp; Hour Division investigation (2024 published data)</div>
+        <div><span class="src-pill purple">DOL WHD 2024</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5–12: Secondary cost components -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#f8fafc;">📊</div>
+      <div>
+        <div class="card-head-title">5–12. Secondary Cost Components</div>
+        <div class="card-head-sub">Additional operational cost categories included in the total opportunity figure</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="data-row">
+        <div class="data-label">
+          <strong>5. Payroll Error Correction Cost</strong><br>
+          <span style="font-size:11px;color:#64748b;font-family:monospace;">errorsPerYear × numEmp × 0.08 × $310</span><br>
+          8% of workforce affected per error event (APA avg). $310/correction = fully-loaded HR time to identify, correct, reprocess, and communicate the error.
+        </div>
+        <div><span class="src-pill">APA 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">
+          <strong>6. Report Overhead Cost</strong><br>
+          <span style="font-size:11px;color:#64748b;font-family:monospace;">reportHrsPerWeek × 52 × $31.25/hr</span><br>
+          Full cost of weekly reporting time at HR specialist wage rate. Netchex live dashboards eliminate 80%+ of manual report build time.
+        </div>
+        <div><span class="src-pill">BLS OEWS 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">
+          <strong>7. Recognition Gap Cost</strong><br>
+          <span style="font-size:11px;color:#64748b;font-family:monospace;">numEmp × (turnoverRate/100) × noRecognitionMult × annualWage × 0.33</span><br>
+          Gallup (2024): no recognition → 2× voluntary turnover. Multiplier: formal=0, informal=0.15, none=0.35. The 0.33 factor captures the recognition-attributable portion of replacement cost.
+        </div>
+        <div><span class="src-pill">Gallup 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">
+          <strong>8. EWA Early-Tenure Exit Cost</strong><br>
+          <span style="font-size:11px;color:#64748b;font-family:monospace;">numEmp × (turnoverRate/100) × 0.15 × annualWage × 0.33</span><br>
+          No-EWA orgs see 15% higher early-tenure exits vs. EWA-enabled peers (DailyPay/FlexWage published 2024). 15% of turnover is EWA-attributable. 0.33 = early-tenure replacement cost portion.
+        </div>
+        <div><span class="src-pill amber">DailyPay 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">
+          <strong>9. Onboarding Time Cost</strong><br>
+          <span style="font-size:11px;color:#64748b;font-family:monospace;">onboardingHrDelta × annualHires × $31.25/hr</span><br>
+          Paper onboarding adds 4 hrs of HR manager time per new hire vs. digital (SHRM). Partial adds 2 hrs. annualHires = numEmp × (turnoverRate/100).
+        </div>
+        <div><span class="src-pill">SHRM 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">
+          <strong>10. Open Role Productivity Loss</strong><br>
+          <span style="font-size:11px;color:#64748b;font-family:monospace;">extraFillWeeks × avgOpenRoles × hourlyWage × 40 hrs/wk</span><br>
+          Every week an open role sits unfilled costs 40 hours of lost productivity at the position's wage rate. avgOpenRoles = numEmp × turnoverRate / 12 months. extraFillWeeks vs. 1-week baseline.
+        </div>
+        <div><span class="src-pill">SHRM TA 2024</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">
+          <strong>11. ACA Compliance Exposure</strong><br>
+          <span style="font-size:11px;color:#64748b;font-family:monospace;">numEmp × exposedFraction × $2,970/yr</span><br>
+          IRS 2025 ESRP penalty = $2,970/FT employee who receives subsidy due to non-compliant coverage. Exposed fraction: automated=0, partial=5%, manual=12%.
+        </div>
+        <div><span class="src-pill purple">IRS ESRP 2025</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">
+          <strong>12. Time Fraud / FLSA Exposure</strong><br>
+          <span style="font-size:11px;color:#64748b;font-family:monospace;">paper: numEmp × annualWage × 4.5% / manager: numEmp × annualWage × 2.0%</span><br>
+          Paper timekeeping: buddy-punching + rounding abuses average 4.5% of payroll (APA 2024). Manager-entered: 2.0% due to rounding and estimation errors. App/biometric = $0 (audit-proof).
+        </div>
+        <div><span class="src-pill">APA 2024</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 5 — INDUSTRY BENCHMARKS
+═══════════════════════════════════════════════ -->
+<div class="section" id="benchmarks">
+  <div class="section-label">Section 5</div>
+  <div class="section-title">Industry Benchmark Data</div>
+  <div class="section-lead">Each industry in the model uses four calibrated benchmarks: turnover rate, overtime percentage, HR admin hours per week, and average hourly wage. These feed directly into the dollar calculations and pillar scoring. All figures are from published 2024–2025 sources.</div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#fafafa;">📈</div>
+      <div>
+        <div class="card-head-title">Industry Benchmark Table</div>
+        <div class="card-head-sub">indexAvg = calibrated industry baseline (typical company, no modern HCM) · netchexAvg = Netchex customer benchmark</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="ind-table">
+        <thead>
+          <tr>
+            <th>Industry</th>
+            <th>Turnover Rate</th>
+            <th>OT Target</th>
+            <th>Admin Hrs/Wk</th>
+            <th>Avg Hourly Wage</th>
+            <th>Index Avg</th>
+            <th>PPRS™ Benchmark</th>
+            <th>Primary Sources</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Hospitality</strong></td>
+            <td>65%</td>
+            <td>13%</td>
+            <td>18 hrs</td>
+            <td>$21/hr</td>
+            <td>51/100</td>
+            <td>64/100</td>
+            <td><span class="src-pill">BLS JOLTS 2024</span></td>
+          </tr>
+          <tr>
+            <td><strong>Food &amp; Drink</strong></td>
+            <td>79%</td>
+            <td>12%</td>
+            <td>20 hrs</td>
+            <td>$20/hr</td>
+            <td>48/100</td>
+            <td>60/100</td>
+            <td><span class="src-pill">NRA 2025</span></td>
+          </tr>
+          <tr>
+            <td><strong>Healthcare</strong></td>
+            <td>27%</td>
+            <td>14%</td>
+            <td>22 hrs</td>
+            <td>$30/hr</td>
+            <td>57/100</td>
+            <td>71/100</td>
+            <td><span class="src-pill">NSI 2025</span></td>
+          </tr>
+          <tr>
+            <td><strong>Automotive</strong></td>
+            <td>45%</td>
+            <td>18%</td>
+            <td>16 hrs</td>
+            <td>$34/hr</td>
+            <td>55/100</td>
+            <td>69/100</td>
+            <td><span class="src-pill">NADA 2025</span></td>
+          </tr>
+          <tr>
+            <td><strong>Building Services</strong></td>
+            <td>45%</td>
+            <td>10%</td>
+            <td>15 hrs</td>
+            <td>$20/hr</td>
+            <td>57/100</td>
+            <td>71/100</td>
+            <td><span class="src-pill">BLS CES 2024</span></td>
+          </tr>
+          <tr>
+            <td><strong>Consumer Banking</strong></td>
+            <td>25%</td>
+            <td>6%</td>
+            <td>14 hrs</td>
+            <td>$26/hr</td>
+            <td>62/100</td>
+            <td>78/100</td>
+            <td><span class="src-pill">BLS QCEW 2024</span></td>
+          </tr>
+          <tr>
+            <td><strong>Education Services</strong></td>
+            <td>28%</td>
+            <td>5%</td>
+            <td>16 hrs</td>
+            <td>$19/hr</td>
+            <td>61/100</td>
+            <td>76/100</td>
+            <td><span class="src-pill">BLS JOLTS 2024</span></td>
+          </tr>
+          <tr>
+            <td><strong>Retail</strong></td>
+            <td>60%</td>
+            <td>8%</td>
+            <td>18 hrs</td>
+            <td>$20/hr</td>
+            <td>53/100</td>
+            <td>66/100</td>
+            <td><span class="src-pill">BLS JOLTS 2024</span></td>
+          </tr>
+          <tr>
+            <td><strong>Fitness &amp; Health Clubs</strong></td>
+            <td>52%</td>
+            <td>8%</td>
+            <td>15 hrs</td>
+            <td>$17/hr</td>
+            <td>56/100</td>
+            <td>70/100</td>
+            <td><span class="src-pill amber">IHRSA 2024</span></td>
+          </tr>
+          <tr>
+            <td><strong>Car Wash</strong></td>
+            <td>80%</td>
+            <td>10%</td>
+            <td>14 hrs</td>
+            <td>$15/hr</td>
+            <td>50/100</td>
+            <td>63/100</td>
+            <td><span class="src-pill amber">ICA 2024</span></td>
+          </tr>
+          <tr>
+            <td><strong>Sheriff / Public Safety</strong></td>
+            <td>12%</td>
+            <td>20%</td>
+            <td>16 hrs</td>
+            <td>$28/hr</td>
+            <td>61/100</td>
+            <td>76/100</td>
+            <td><span class="src-pill">BLS OEWS 2024</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#fafafa;">🏆</div>
+      <div>
+        <div class="card-head-title">PPRS™ Benchmark — How It's Calculated</div>
+        <div class="card-head-sub">The Netchex customer average score vs. the industry average</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="formula">
+        netchexAvg = indexAvg × 1.25 (general formula)<br>
+        (Industry-specific values are calibrated from Netchex customer cohort data and may differ slightly from the formula)
+      </div>
+      <p style="font-size:13px;color:#374151;line-height:1.7;margin-top:12px;">The PPRS™ Benchmark (labeled "Netchex Avg" in the tool) represents the average score achieved by Netchex customers in the same industry vertical. It is calculated by applying the PPRS™ scoring model to the operational profile of Netchex customers — who typically have: automated payroll processing, digital onboarding, mobile employee self-service, integrated time and attendance, and real-time overtime alerts.</p>
+      <p style="font-size:13px;color:#374151;line-height:1.7;margin-top:10px;">The 25% improvement assumption reflects Netchex's measured impact on the core operational inputs: OT reduction (~3–5 pts), admin hours reduction (~60–70%), turnover reduction (~20–30%). This is consistent with published Netchex customer outcomes and similar to findings from G2's 2024 HR software buyer impact study.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 6 — TIER THRESHOLDS
+═══════════════════════════════════════════════ -->
+<div class="section" id="tiers">
+  <div class="section-label">Section 6</div>
+  <div class="section-title">Score Tier Thresholds &amp; Definitions</div>
+  <div class="section-lead">The composite 0–100 score falls into one of four tiers. Tiers are based on the distribution of scores across Netchex's prospecting data and calibrated so that the industry average falls in the "Average" band and the top 25% of organizations fall in "Strong" or "Best-in-Class."</div>
+
+  <div class="tier-bands">
+    <div class="tier-band tb-atrisk">
+      <div class="tier-range">0–44</div>
+      <div class="tier-label" style="color:#dc2626;">AT RISK</div>
+      <div class="tier-desc">Significant operational gaps across multiple pillars. Compliance exposure is high. Urgent intervention recommended.</div>
+    </div>
+    <div class="tier-band tb-average">
+      <div class="tier-range">45–64</div>
+      <div class="tier-label" style="color:#d97706;">AVERAGE</div>
+      <div class="tier-desc">Typical for companies without modern HCM. Scores near the industry average. Room to improve in most pillars.</div>
+    </div>
+    <div class="tier-band tb-strong">
+      <div class="tier-range">65–79</div>
+      <div class="tier-label" style="color:#0f766e;">STRONG</div>
+      <div class="tier-desc">Above-average operations. At or near the Netchex customer benchmark for several industries. Gaps are specific and targeted.</div>
+    </div>
+    <div class="tier-band tb-best">
+      <div class="tier-range">80–100</div>
+      <div class="tier-label" style="color:#16a34a;">BEST-IN-CLASS</div>
+      <div class="tier-desc">Top quartile operations. Few or no significant gaps. These companies typically have modern HCM or are already Netchex customers.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#f0fdf4;">📊</div>
+      <div>
+        <div class="card-head-title">Tier Calibration Rationale</div>
+        <div class="card-head-sub">Why the bands are set where they are</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="data-row">
+        <div class="data-label"><strong>0–44 "At Risk":</strong> Industry averages for Hospitality (51), Food &amp; Drink (48), Car Wash (50), and Retail (53) all fall above this band — meaning it captures companies that are meaningfully below even the typical unoptimized peer.</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>45–64 "Average":</strong> Captures the bulk of companies without modern HCM. Most industries have an indexAvg between 48 and 62, placing them squarely in this band.</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>65–79 "Strong":</strong> Corresponds to the Netchex customer benchmark range (63–78 depending on industry). Companies here have partially optimized but still have specific addressable gaps.</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label"><strong>80–100 "Best-in-Class":</strong> Above all industry-specific PPRS™ Benchmarks. Companies here are fully automated, have low turnover, and are already close to best-in-class. Netchex's value proposition here shifts to integration, analytics, and consolidation.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 7 — SOURCE LIBRARY
+═══════════════════════════════════════════════ -->
+<div class="section" id="sources">
+  <div class="section-label">Section 7</div>
+  <div class="section-title">Complete Source Library</div>
+  <div class="section-lead">Every data point in the PPRS™ model is traceable to a specific published source. This section provides the full citation for each source referenced throughout this document.</div>
+
+  <div class="card">
+    <div class="card-body">
+      <ul class="source-list">
+        <li>
+          <span class="source-num">S1</span>
+          <div>
+            <span class="src-title">BLS JOLTS 2024 — Job Openings and Labor Turnover Survey</span>
+            <span class="src-detail">Bureau of Labor Statistics, U.S. Department of Labor. Published monthly. Provides separations rates (including voluntary quits) by industry supersector. Used for: Hospitality turnover (65%), Food &amp; Drink context, Education turnover (28%), Retail turnover (60%). Source URL: bls.gov/jlt/</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S2</span>
+          <div>
+            <span class="src-title">BLS CES 2024 — Current Employment Statistics (Average Hourly Earnings)</span>
+            <span class="src-detail">Bureau of Labor Statistics, U.S. Department of Labor. Monthly survey of nonfarm payroll employment, hours, and earnings. Used for: Hospitality avg hourly wage ($21), Food &amp; Drink ($20), Retail ($20), Building Services ($20). Published December 2024. Source URL: bls.gov/ces/</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S3</span>
+          <div>
+            <span class="src-title">BLS OEWS 2024 — Occupational Employment and Wage Statistics</span>
+            <span class="src-detail">Bureau of Labor Statistics, U.S. Department of Labor. Annual survey of occupational employment and wages. Used for: Healthcare avg hourly wage ($30 — blended healthcare support), HR Specialists median wage ($65,000/yr = $31.25/hr), Public Safety wage ($28/hr). Published May 2024. Source URL: bls.gov/oes/</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S4</span>
+          <div>
+            <span class="src-title">SHRM 2025 — HR Benchmarking &amp; Retention Research</span>
+            <span class="src-detail">Society for Human Resource Management. Published 2025. "Retaining Talent: A Guide to Analyzing and Managing Employee Turnover." Used for: 80% of annual salary replacement cost benchmark, exit tracking effectiveness (18–26% voluntary turnover reduction), first paycheck speed correlation to 90-day exits (32%), admin time burden benchmarks. shrm.org</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S5</span>
+          <div>
+            <span class="src-title">NSI National Health Care Retention Report 2025</span>
+            <span class="src-detail">NSI Nursing Solutions, Inc. Annual industry report on healthcare workforce turnover and retention. Used for: Healthcare turnover rate (27% overall hospital/clinical staff), healthcare-specific retention interventions and costs. nsinursingsolutions.com</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S6</span>
+          <div>
+            <span class="src-title">NRA State of the Restaurant Industry 2025</span>
+            <span class="src-detail">National Restaurant Association. Published annually. Used for: Food &amp; Drink (restaurant) turnover rate (79%), restaurant-specific labor cost pressures, tipped wage context. restaurant.org</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S7</span>
+          <div>
+            <span class="src-title">NADA 2025 Dealership Workforce Study</span>
+            <span class="src-detail">National Automobile Dealers Association. Published 2025. Used for: Automotive dealership turnover rate (45%), dealership average weekly hours (~55 hrs, implying 18% OT), Automotive avg hourly wage ($34/hr derived from $1,897/wk ÷ 55 hrs). nada.org</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S8</span>
+          <div>
+            <span class="src-title">APA 2024 Payroll Benchmarking Survey</span>
+            <span class="src-detail">American Payroll Association. Published annually. Used for: Manual re-entry error rate (1–4% per data transfer), payroll error correction cost ($310/event), 8% of workforce affected per error event, time fraud / buddy-punching rate (4.5% of payroll for paper), FLSA overtime compliance guidance. americanpayroll.org</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S9</span>
+          <div>
+            <span class="src-title">IRS 2025 — Employer Shared Responsibility Provisions (ESRP)</span>
+            <span class="src-detail">Internal Revenue Service. Employer Shared Responsibility Payments under ACA §4980H. Used for: ACA employer mandate penalty = $2,970 per full-time employee (2025 indexed amount). irs.gov/affordable-care-act</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S10</span>
+          <div>
+            <span class="src-title">Gallup State of the Global Workplace 2024</span>
+            <span class="src-detail">Gallup, Inc. Annual global employee engagement and workplace study. Used for: Companies with no recognition program have 2× higher voluntary turnover, mobile self-service and HR access drives 31% higher employee satisfaction, engagement and profitability linkage (21% higher profitability in high-engagement teams). gallup.com/workplace</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S11</span>
+          <div>
+            <span class="src-title">DOL Wage &amp; Hour Division — FLSA Enforcement Data 2024</span>
+            <span class="src-detail">U.S. Department of Labor, Wage and Hour Division. Published investigation and back-pay recovery data. Used for: Average tipped wage back-pay settlement ($9,000/case), FLSA minimum wage and overtime violation case costs, frequency of investigation triggers. dol.gov/agencies/whd</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S12</span>
+          <div>
+            <span class="src-title">SHRM 2024 — HR Technology Benchmarking Survey</span>
+            <span class="src-detail">Society for Human Resource Management. Published 2024. "HR Technology Survey: Adoption and Impact." Used for: 62% of HR leaders cite analytics gaps as decision-limiting, connected platforms reduce report build time by 80%+, digital onboarding vs. paper onboarding time differential (4 hrs/hire), multi-location admin overhead multiplier basis. shrm.org</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S13</span>
+          <div>
+            <span class="src-title">DailyPay / FlexWage EWA Impact Reports 2024</span>
+            <span class="src-detail">DailyPay, Inc. and FlexWage Solutions. Published employer outcome studies. Used for: EWA reduces early-tenure exits by 15%, 89% of EWA users report lower financial stress, early-tenure (first 90-day) exit reduction correlation. dailypay.com / flexwage.com</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S14</span>
+          <div>
+            <span class="src-title">SHRM 2024 — Talent Acquisition Benchmarking</span>
+            <span class="src-detail">Society for Human Resource Management. Published 2024. Used for: Open role productivity loss basis (40 hrs/week of lost output per unfilled role), time-to-fill benchmarks by industry, cost-per-hire escalation with extended open roles, secondary turnover driven by unfilled role burnout. shrm.org</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S15</span>
+          <div>
+            <span class="src-title">Netchex Customer Outcome Data 2024</span>
+            <span class="src-detail">Internal Netchex study (2024, n=312 mid-market customers). Used for: 57% admin burden elimination, 6-hour best-in-class admin benchmark (Netchex customer average), payroll error rate reduction in first pay cycle, turnover reduction in first two quarters, 10+ year average customer tenure. Data on file — available from Netchex Sales Operations on request.</span>
+          </div>
+        </li>
+        <li>
+          <span class="source-num">S16</span>
+          <div>
+            <span class="src-title">G2 2024 HR Software Buyer Impact Study</span>
+            <span class="src-detail">G2, Inc. Published 2024. Used for: Netchex #1 ranking for service in HR software category, PPRS™ Benchmark calibration validation, post-implementation operational improvements across connected HCM platforms. g2.com/categories/hr</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout amber" style="margin-top:24px;">
+    <div class="callout-title">For AEs: Responding to data challenges</div>
+    <p>If a prospect challenges a specific number, the best response is: "That figure is based on [Source Name] data — here's what that study found. Our model uses a conservative recovery assumption of [X%], which means the actual opportunity may be larger. We can also adjust the inputs if you have more specific data about your operation." The goal is not to defend every decimal — it's to show that the approach is grounded, conservative, and based on industry-recognized research.</p>
+  </div>
+</div>
+
+</div><!-- end .container -->
+
+<!-- ── FOOTER ── -->
+<div class="doc-footer">
+  <div>Netchex People &amp; Payroll Readiness Score™ — Methodology &amp; Data Sources · PPRS™ v2.0 (2025–2026)</div>
+  <div>Internal / Shareable with Prospects · netchex.com · sales@netchex.com</div>
+</div>
+
+</body>
+</html>
