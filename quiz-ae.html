@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Netchex PPRS™ — AE Scoring Tool</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            blue: {
+              DEFAULT: '#1E3A8A',
+              50:  '#EFF6FF',
+              100: '#DBEAFE',
+              200: '#BFDBFE',
+              300: '#93C5FD',
+              400: '#60A5FA',
+              500: '#3B82F6',
+              600: '#2563EB',
+              700: '#1D4ED8',
+              800: '#1E40AF',
+              900: '#1E3A8A',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    body { margin: 0; padding: 0; background: #F6F7FA; font-family: Inter, sans-serif; }
+
+    .bg-blue                { background-color: #1E3A8A !important; }
+    .text-blue              { color: #1E3A8A !important; }
+    .bg-blue\/60            { background-color: rgba(30,58,138,0.6) !important; }
+    .bg-blue\/85            { background-color: rgba(30,58,138,0.85) !important; }
+    .hover\:text-blue:hover { color: #1E3A8A !important; }
+    .border-blue            { border-color: #1E3A8A !important; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 28px;
+      border-radius: 100px;
+      font-family: Inter, sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1;
+      cursor: pointer;
+      text-decoration: none;
+      border: 2px solid transparent;
+      transition: opacity 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn--primary { background: #1E3A8A; color: #fff; border-color: #1E3A8A; }
+    .btn--primary:hover:not(:disabled) { opacity: 0.88; }
+    .btn--white { background: #fff; color: #1E3A8A; border-color: #fff; }
+    .btn--ghost { background: transparent; color: #1E3A8A; border-color: #1E3A8A; }
+    .btn--ghost:hover:not(:disabled) { background: #EFF6FF; }
+    .btn--amber { background: #F59E0B; color: #0a1628; border-color: #F59E0B; font-weight: 700; }
+    .btn--amber:hover:not(:disabled) { opacity: 0.9; }
+
+    /* Password overlay */
+    #password-overlay {
+      position: fixed; inset: 0; background: #0d1f4e; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.4s ease;
+    }
+    #password-overlay.fade-out { opacity: 0; pointer-events: none; }
+
+    /* AE header bar */
+    #ae-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: #0d1f4e;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 24px; border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Screen visibility */
+    .screen { display: none; }
+    .screen.active { display: flex; }
+    #screen-loading.active { background: #1E3A8A; align-items: center; justify-content: center; text-align: center; }
+    #screen-results { display: none; }
+    #screen-results.active { display: block; }
+
+    /* Question panels */
+    .question-panel { display: none; width: 100%; max-width: 680px; }
+    .question-panel.active { display: block; animation: fadeInUp 0.3s ease; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Range input */
+    input[type="range"] {
+      -webkit-appearance: none; width: 100%; height: 6px;
+      border-radius: 3px; background: #E5E7EB; outline: none;
+      cursor: pointer; accent-color: #2563EB;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 22px; height: 22px;
+      border-radius: 50%; background: #2563EB; border: 3px solid #fff;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.4); cursor: pointer;
+    }
+
+    /* Loading steps */
+    .loading-steps li { transition: color 0.4s; }
+    .loading-steps li::before { content: '○'; position: absolute; left: 0; color: rgba(255,255,255,0.3); }
+    .loading-steps li.done { color: rgba(255,255,255,0.65); }
+    .loading-steps li.done::before { content: '✓'; color: rgba(255,255,255,0.65); }
+    .loading-steps li.active { color: #fff; }
+    .loading-steps li.active::before { content: '●'; color: #fff; }
+
+    /* Results hero */
+    #screen-results .results-hero-v2 {
+      background: linear-gradient(155deg, #07101f 0%, #0f1f45 55%, #1a3470 100%);
+      padding: 48px 40px 56px; overflow: hidden; position: relative;
+    }
+    #screen-results .results-hero-v2 .hero-inner { max-width: 1100px; margin: 0 auto; position: relative; }
+
+    /* Unified cards */
+    .unified-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+    .unified-card-header { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 14px 20px; background: #fafafa; border-bottom: 1px solid #f1f5f9; gap: 16px; }
+    .unified-card-body { display: grid; grid-template-columns: 1fr 1px 1fr; }
+    .unified-card-half { padding: 18px 20px 24px; }
+    .unified-card-divider { background: #f1f5f9; }
+    .unified-card-half-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; }
+    .unified-card-mini-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; background: #f8f9fc; border-radius: 8px; padding: 10px; text-align: center; }
+    .mini-stat-val { font-size: 15px; font-weight: 800; color: #0d1f4e; }
+    .mini-stat-lbl { font-size: 9px; color: #94a3b8; margin-top: 2px; }
+    .mini-stat-divider { border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; }
+    .cost-math-pill { font-size: 11px; color: #94a3b8; background: #f8f9fc; border-radius: 5px; padding: 6px 10px; margin-bottom: 10px; font-style: italic; border: 1px solid #e2e8f0; }
+
+    /* Netchex gap section */
+    .netchex-gap-section { background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 16px; margin-top: 12px; }
+    .netchex-gap-section .gap-title { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1d4ed8; margin-bottom: 8px; }
+    .netchex-product-pill { display: inline-block; background: #1E3A8A; color: #fff; font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; margin: 2px 3px 2px 0; }
+    .netchex-strong-section { background: #f0faf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px 16px; margin-top: 12px; }
+
+    /* Module cards */
+    .module-card-v2 { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; position: relative; overflow: hidden; }
+    .module-priority-badge { position: absolute; top: 0; right: 0; background: #f59e0b; color: #0a1628; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 4px 9px; border-bottom-left-radius: 7px; }
+
+    /* Savings row */
+    .savings-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid #f1f5f9; }
+    .savings-row:last-child { border-bottom: none; border-top: 2px solid #1a8c4e; }
+
+    /* Score grade */
+    .score-grade { display: inline-block; padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 700; margin-top: 16px; letter-spacing: 0.04em; }
+    .score-grade.high { background: #FFFFFF; color: #1E3A8A; }
+    .score-grade.mid  { background: #F59E0B; color: #111827; }
+    .score-grade.low  { background: #DC2626; color: #FFFFFF; }
+
+    /* Choice cards */
+    .choice-card.selected { border-color: #2563EB !important; background-color: #EFF6FF !important; }
+    .tag-pill.selected { border-color: #2563EB !important; background-color: #EFF6FF !important; color: #1E3A8A !important; }
+
+    /* Form inputs */
+    .ae-input {
+      width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+      font-size: 14px; outline: none; font-family: Inter, sans-serif;
+      box-sizing: border-box; transition: border-color 0.2s;
+    }
+    .ae-input:focus { border-color: #2563EB; }
+    .ae-select {
+      width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+      font-size: 14px; outline: none; font-family: Inter, sans-serif;
+      box-sizing: border-box; background: #fff; transition: border-color 0.2s; cursor: pointer;
+    }
+    .ae-select:focus { border-color: #2563EB; }
+    .ae-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; display: block; }
+    .ae-field { margin-bottom: 16px; }
+
+    /* Narrative */
+    .narrative-box h3 { font-size: 22px; font-weight: 700; color: #1E3A8A; margin-bottom: 14px; line-height: 1.3; }
+    .narrative-box p  { font-size: 15px; color: #64748B; line-height: 1.7; margin-bottom: 12px; }
+    .narrative-box p:last-child { margin-bottom: 0; }
+
+    /* BM markers */
+    .bm-you { position: absolute; height: 100%; background: rgba(255,255,255,0.9); border-radius: 4px; transition: width 1.2s ease; }
+    .bm-baseline-marker { position: absolute; top: -3px; width: 2px; height: 14px; background: rgba(253,186,48,0.9); border-radius: 1px; }
+
+    /* Investment section */
+    .investment-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+    .investment-card-header { background: #0d1f4e; padding: 14px 20px; }
+    .roi-scenario { border-radius: 10px; padding: 16px 18px; text-align: center; }
+
+    /* Score transform visual */
+    .score-transform-card { background: linear-gradient(135deg, #0d1f4e 0%, #1a3470 100%); border-radius: 16px; padding: 32px 36px; color: #fff; margin-bottom: 20px; }
+
+    /* Print */
+    @media print {
+      #ae-header, #password-overlay, .no-print { display: none !important; }
+      #screen-results, #screen-results * { visibility: visible; }
+      #screen-results { display: block !important; position: absolute; top: 0; left: 0; width: 100%; zoom: 80%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    /* PDF loading overlay */
+    @keyframes pdf-spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ PASSWORD OVERLAY ═══════════ -->
+<div id="password-overlay">
+  <div style="width:90%;max-width:420px;text-align:center;">
+    <div style="margin-bottom:24px;">
+      <svg viewBox="0 0 28 28" style="width:36px;height:36px;margin:0 auto 12px;display:block;"><rect width="28" height="28" rx="7" fill="#3dc87e"></rect><text x="14" y="20" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="15" fill="white">N</text></svg>
+      <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;">Netchex Internal Tool</div>
+      <h1 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:6px;">PPRS™ AE Scoring Tool</h1>
+      <p style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">For internal use only. Fill out discovery answers to generate a prospect proposal.</p>
+    </div>
+    <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:28px 24px;">
+      <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Enter Access Password</div>
+      <div style="position:relative;margin-bottom:16px;">
+        <input type="password" id="pw-input" placeholder="Password" style="width:100%;padding:12px 44px 12px 16px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;font-size:15px;color:#fff;outline:none;box-sizing:border-box;font-family:Inter,sans-serif;transition:border-color 0.2s;" onfocus="this.style.borderColor='rgba(255,255,255,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.2)'" onkeydown="if(event.key==='Enter')checkPassword()" />
+        <button onclick="togglePw()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.5);font-size:13px;padding:4px;" id="pw-toggle">Show</button>
+      </div>
+      <div id="pw-error" style="display:none;color:#f87171;font-size:12px;margin-bottom:12px;">Incorrect password. Try again.</div>
+      <button onclick="checkPassword()" style="width:100%;background:#F59E0B;color:#0a1628;padding:13px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:Inter,sans-serif;">Unlock AE Tool &rarr;</button>
+    </div>
+    <p style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:16px;">Do not share this tool or password with prospects.</p>
+  </div>
+</div>
+
+<!-- ═══════════ AE HEADER BAR ═══════════ -->
+<div id="ae-header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <svg viewBox="0 0 28 28" style="width:22px;height:22px;flex-shrink:0;"><rect width="28" height="28" rx="7" fill="#3dc87e"></rect><text x="14" y="20" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="15" fill="white">N</text></svg>
+    <span style="font-size:13px;font-weight:700;color:#fff;">Netchex PPRS™</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="background:#F59E0B;color:#0a1628;font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;">AE TOOL — CONFIDENTIAL</span>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: AE DISCOVERY (pre-quiz) ═══════════ -->
+<div id="screen-ae-discovery" class="screen active" style="min-height:100dvh;padding-top:56px;">
+  <div style="flex:1;display:flex;align-items:flex-start;justify-content:center;padding:60px 24px 80px;">
+    <div style="width:100%;max-width:620px;">
+      <div style="margin-bottom:32px;">
+        <div style="display:inline-flex;align-items:center;gap:7px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:18px;">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#92400E" stroke-width="1.5"/><path d="M5 3v2.5l1.5.75" stroke="#92400E" stroke-width="1.2" stroke-linecap="round"/></svg>
+          AE Discovery Fields
+        </div>
+        <h2 style="font-size:clamp(26px,4vw,36px);font-weight:800;color:#0d1f4e;line-height:1.2;margin-bottom:8px;">Who's this assessment for?</h2>
+        <p style="font-size:14px;color:#64748b;line-height:1.6;">Fill in what you know about the prospect. These fields populate the proposal and appear in the PDF cover.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:32px;">
+
+        <div class="ae-field">
+          <label class="ae-label" for="ae-company">Prospect Company Name <span style="color:#dc2626;">*</span></label>
+          <input class="ae-input" type="text" id="ae-company" placeholder="Acme Hospitality Group" />
+        </div>
+
+        <div class="ae-field">
+          <label class="ae-label" for="ae-contact">Prospect Contact Name <span style="color:#dc2626;">*</span></label>
+          <input class="ae-input" type="text" id="ae-contact" placeholder="Jane Smith, HR Director" />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="ae-field">
+            <label class="ae-label" for="ae-revenue">Estimated Annual Revenue</label>
+            <select class="ae-select" id="ae-revenue">
+              <option value="">Select range...</option>
+              <option value="Under $5M">Under $5M</option>
+              <option value="$5M-$25M">$5M &ndash; $25M</option>
+              <option value="$25M-$100M">$25M &ndash; $100M</option>
+              <option value="$100M-$500M">$100M &ndash; $500M</option>
+              <option value="$500M+">$500M+</option>
+            </select>
+          </div>
+          <div class="ae-field">
+            <label class="ae-label" for="ae-vendor">Current HCM Vendor</label>
+            <select class="ae-select" id="ae-vendor">
+              <option value="">Select vendor...</option>
+              <option value="ADP">ADP</option>
+              <option value="Paychex">Paychex</option>
+              <option value="Paylocity">Paylocity</option>
+              <option value="Paycom">Paycom</option>
+              <option value="Rippling">Rippling</option>
+              <option value="Gusto">Gusto</option>
+              <option value="BambooHR">BambooHR</option>
+              <option value="Manual/Spreadsheets">Manual / Spreadsheets</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="ae-field">
+            <label class="ae-label" for="ae-contract">Contract Status</label>
+            <select class="ae-select" id="ae-contract">
+              <option value="">Select status...</option>
+              <option value="Month-to-month">Month-to-month</option>
+              <option value="In contract — expires &lt;6 mo">In contract &mdash; expires &lt;6 mo</option>
+              <option value="In contract — expires >6 mo">In contract &mdash; expires &gt;6 mo</option>
+              <option value="Unknown">Unknown</option>
+            </select>
+          </div>
+          <div class="ae-field">
+            <label class="ae-label" for="ae-spend">Current Annual HCM Spend <span style="color:#94a3b8;font-weight:400;">(optional)</span></label>
+            <input class="ae-input" type="text" id="ae-spend" placeholder="$XX,XXX" />
+          </div>
+        </div>
+
+        <div class="ae-field">
+          <label class="ae-label" for="ae-urgency">Deal Urgency</label>
+          <select class="ae-select" id="ae-urgency">
+            <option value="">Select urgency...</option>
+            <option value="Hot — active evaluation">Hot &mdash; active evaluation</option>
+            <option value="Warm — researching">Warm &mdash; researching</option>
+            <option value="Cool — future state">Cool &mdash; future state</option>
+          </select>
+        </div>
+
+        <div id="ae-discovery-error" style="display:none;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;font-size:13px;color:#DC2626;margin-bottom:14px;">
+          Please fill in the Prospect Company Name and Contact Name before continuing.
+        </div>
+
+        <button onclick="beginAssessment()" style="width:100%;background:#1E3A8A;color:#fff;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">
+          Begin Assessment &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: QUIZ ═══════════ -->
+<div id="screen-quiz" class="flex-col screen min-h-dvh" style="padding-top:56px;">
+    <div class="h-[3px] relative bg-grey-150">
+        <div class="h-full transition-[width] duration-[400ms] ease-in-out bg-blue/85 w-0" id="progress-fill"></div>
+    </div>
+    <div class="flex-1 flex items-start justify-center py-[60px] px-6">
+
+        <!-- Q1: Persona -->
+        <div class="question-panel" id="q1">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 1 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">The prospect contact is primarily the&hellip;</h2>
+            <div class="choice-grid grid grid-cols-2 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="persona" data-value="cfo">
+                    <div class="text-2xl mb-2.5">💼</div>
+                    <div class="text-base font-semibold text-blue">CFO / Financial Leader</div>
+                    <div class="text-xs text-gray-400 mt-0.5">Focus: ROI &amp; cost control</div>
+                </div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="persona" data-value="hr">
+                    <div class="text-2xl mb-2.5">👥</div>
+                    <div class="text-base font-semibold text-blue">HR Director / VP of People</div>
+                    <div class="text-xs text-gray-400 mt-0.5">Focus: People &amp; retention</div>
+                </div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="persona" data-value="ops">
+                    <div class="text-2xl mb-2.5">⚙️</div>
+                    <div class="text-base font-semibold text-blue">Office Manager / HR Generalist</div>
+                    <div class="text-xs text-gray-400 mt-0.5">Focus: Daily operations</div>
+                </div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="persona" data-value="owner">
+                    <div class="text-2xl mb-2.5">🏢</div>
+                    <div class="text-base font-semibold text-blue">Business Owner / Operator</div>
+                    <div class="text-xs text-gray-400 mt-0.5">Focus: Growth &amp; risk</div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q1-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back to Discovery</button>
+            </div>
+        </div>
+
+        <!-- Q2: Industry -->
+        <div class="question-panel" id="q2">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 2 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">What industry best describes the prospect?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">This calibrates benchmark comparisons</strong> — industry averages for overtime, turnover, and admin burden vary significantly by sector.</div>
+            <div class="choice-grid grid grid-cols-3 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="hospitality"><div class="text-base font-semibold text-blue">Hospitality</div><div class="text-xs text-gray-400 mt-0.5">Hotels, resorts, venues</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="food"><div class="text-base font-semibold text-blue">Food &amp; Drink</div><div class="text-xs text-gray-400 mt-0.5">Restaurants, QSR, catering</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="healthcare"><div class="text-base font-semibold text-blue">Healthcare</div><div class="text-xs text-gray-400 mt-0.5">Clinics, senior care, home health</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="automotive"><div class="text-base font-semibold text-blue">Automotive</div><div class="text-xs text-gray-400 mt-0.5">Dealerships, service centers</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="building"><div class="text-base font-semibold text-blue">Building Services</div><div class="text-xs text-gray-400 mt-0.5">Facilities, janitorial, maintenance</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="banking"><div class="text-base font-semibold text-blue">Consumer Banking</div><div class="text-xs text-gray-400 mt-0.5">Banks, credit unions</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="education"><div class="text-base font-semibold text-blue">Education Services</div><div class="text-xs text-gray-400 mt-0.5">K-12, charter schools, tutoring</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="retail"><div class="text-base font-semibold text-blue">Retail</div><div class="text-xs text-gray-400 mt-0.5">Stores, distribution, fulfillment</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="fitness"><div class="text-base font-semibold text-blue">Fitness &amp; Health Clubs</div><div class="text-xs text-gray-400 mt-0.5">Gyms, studios, wellness</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="carwash"><div class="text-base font-semibold text-blue">Car Wash</div><div class="text-xs text-gray-400 mt-0.5">Express, full-service, detail</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="lawenforcement"><div class="text-base font-semibold text-blue">Sheriff / Public Safety</div><div class="text-xs text-gray-400 mt-0.5">Law enforcement, public safety</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="industry" data-value="other"><div class="text-base font-semibold text-blue">Other</div><div class="text-xs text-gray-400 mt-0.5">Deskless or hourly workforce</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q2-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q3: Employee Count -->
+        <div class="question-panel" id="q3">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 3 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">How many employees do they have?</h2>
+            <div class="choice-grid grid grid-cols-3 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="employeeCount" data-value="1-25"><div class="text-base font-semibold text-blue">1 – 25</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="employeeCount" data-value="26-50"><div class="text-base font-semibold text-blue">26 – 50</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="employeeCount" data-value="51-100"><div class="text-base font-semibold text-blue">51 – 100</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="employeeCount" data-value="101-250"><div class="text-base font-semibold text-blue">101 – 250</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="employeeCount" data-value="251-500"><div class="text-base font-semibold text-blue">251 – 500</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="employeeCount" data-value="501-1000"><div class="text-base font-semibold text-blue">501 – 1,000</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="employeeCount" data-value="1000plus"><div class="text-base font-semibold text-blue">1,000+</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q3-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q4: Multi-location -->
+        <div class="question-panel" id="q4">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 4 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">Do they manage employees across multiple locations?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Multi-location operations increase HR admin burden by 30&#8211;40%</strong> &#8212; separate payroll runs, location-specific compliance, and limited manager visibility all stack up fast.</div>
+            <div class="choice-grid grid grid-cols-3 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="multiLocation" data-value="single"><div class="text-base font-semibold text-blue">No &#8212; single location</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="multiLocation" data-value="few"><div class="text-base font-semibold text-blue">Yes &#8212; 2 to 5 locations</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="multiLocation" data-value="many"><div class="text-base font-semibold text-blue">Yes &#8212; 6 or more locations</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q4-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q5: Pay Complexity -->
+        <div class="question-panel" id="q5">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 5 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">Do they pay tipped wages, piece-rate, or variable pay?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Tipped wage and variable pay compliance is one of the top FLSA risk areas</strong> &#8212; tip credits, tip pooling rules, and flat-rate pay calculations are common audit triggers.</div>
+            <div class="choice-grid grid grid-cols-3 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="payComplexity" data-value="tipped"><div class="text-base font-semibold text-blue">Yes &#8212; tipped wages</div><div class="text-xs text-gray-400 mt-0.5">Restaurants, hotels, bars</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="payComplexity" data-value="variable"><div class="text-base font-semibold text-blue">Yes &#8212; piece-rate or variable</div><div class="text-xs text-gray-400 mt-0.5">Auto flat-rate, production, commissions</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="payComplexity" data-value="none"><div class="text-base font-semibold text-blue">No &#8212; standard hourly or salary</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q5-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q6: Overtime % (no IDK) -->
+        <div class="question-panel" id="q6">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 6 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">What percentage of their workforce regularly works overtime?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">The target is below 8% of workforce hours.</strong> Above 12% is a measurable cost signal &#8212; typically $1,400 per overtime-heavy employee annually.</div>
+            <div class="mb-7">
+                <div class="mb-4 text-center">
+                    <span class="font-sans text-[52px] text-blue leading-none" id="q6-val">0</span><span class="text-[20px] text-gray-400 font-medium ml-0.5">%</span>
+                </div>
+                <div class="flex justify-between mb-2 text-xs text-gray-400"><span>0%</span><span>35%+</span></div>
+                <input type="range" id="q6-slider" min="0" max="35" value="0" class="!py-0">
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q6-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+                <button id="q6-next" class="btn btn--primary" disabled style="opacity:0.4;cursor:not-allowed">Next &#8594;</button>
+            </div>
+        </div>
+
+        <!-- Q7: Payroll Error Frequency -->
+        <div class="question-panel" id="q7">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 7 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">How often do payroll errors require corrections after processing?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Each correction cycle costs an average of $155&#8211;$620</strong> in HR and employee time.</div>
+            <div class="choice-grid grid grid-cols-2 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="payrollErrors" data-value="rarely"><div class="text-base font-semibold text-blue">Rarely or never</div><div class="text-xs text-gray-400 mt-0.5">Payroll runs clean consistently</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="payrollErrors" data-value="occasional"><div class="text-base font-semibold text-blue">1&#8211;2 times per year</div><div class="text-xs text-gray-400 mt-0.5">Occasional corrections needed</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="payrollErrors" data-value="monthly"><div class="text-base font-semibold text-blue">Monthly corrections</div><div class="text-xs text-gray-400 mt-0.5">A regular part of the process</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="payrollErrors" data-value="often"><div class="text-base font-semibold text-blue">Often &#8212; most pay periods</div><div class="text-xs text-gray-400 mt-0.5">Corrections are expected</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q7-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q8: Admin Hours (no IDK) -->
+        <div class="question-panel" id="q8">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 8 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">How many hours per week does their HR or admin team spend on payroll, benefits, and employee questions combined?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Best-in-class teams spend fewer than 6 hours/week</strong> on payroll processing.</div>
+            <div class="mb-7">
+                <div class="mb-4 text-center">
+                    <span class="font-sans text-[52px] text-blue leading-none" id="q8-val">0</span><span class="text-[20px] text-gray-400 font-medium ml-0.5">hrs/wk</span>
+                </div>
+                <div class="flex justify-between mb-2 text-xs text-gray-400"><span>2 hrs/wk</span><span>40 hrs/wk+</span></div>
+                <input type="range" id="q8-slider" min="0" max="40" value="0" class="!py-0">
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q8-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+                <button id="q8-next" class="btn btn--primary" disabled style="opacity:0.4;cursor:not-allowed">Next &#8594;</button>
+            </div>
+        </div>
+
+        <!-- Q9: Turnover Rate (no IDK) -->
+        <div class="question-panel" id="q9">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 9 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">What is their current annual employee turnover rate?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Every point above industry average has a real dollar cost</strong> &#8212; typically 50&#8211;150% of that employee&#8217;s annual salary to replace.</div>
+            <div class="mb-7">
+                <div class="mb-4 text-center">
+                    <span class="font-sans text-[52px] text-blue leading-none" id="q9-val">0</span><span class="text-[20px] text-gray-400 font-medium ml-0.5">%</span>
+                </div>
+                <div class="flex justify-between mb-2 text-xs text-gray-400"><span>0%</span><span>150%+</span></div>
+                <input type="range" id="q9-slider" min="0" max="150" value="0" class="!py-0">
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q9-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+                <button id="q9-next" class="btn btn--primary" disabled style="opacity:0.4;cursor:not-allowed">Next &#8594;</button>
+            </div>
+        </div>
+
+        <!-- Q10: Mobile Access -->
+        <div class="question-panel" id="q10">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 10 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">How do their employees typically access schedules, pay stubs, and PTO requests?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Employees without mobile self-service generate 3&#8211;5&#215; more HR desk traffic.</strong></div>
+            <div class="choice-grid grid grid-cols-2 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="mobileAccess" data-value="app"><div class="text-base font-semibold text-blue">They use a mobile app</div><div class="text-xs text-gray-400 mt-0.5">Self-service is working well</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="mobileAccess" data-value="web"><div class="text-base font-semibold text-blue">They log into a website</div><div class="text-xs text-gray-400 mt-0.5">Available, but not always convenient</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="mobileAccess" data-value="manager"><div class="text-base font-semibold text-blue">They call or text a manager</div><div class="text-xs text-gray-400 mt-0.5">High volume of manual requests</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="mobileAccess" data-value="paper"><div class="text-base font-semibold text-blue">Mostly paper or in-person</div><div class="text-xs text-gray-400 mt-0.5">No digital self-service</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q10-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q11: Report Build Time -->
+        <div class="question-panel" id="q11">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 11 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">How long does it take to build a manager report or pull a compliance summary?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">62% of HR leaders say analytics gaps hurt business decisions.</strong></div>
+            <div class="choice-grid grid grid-cols-2 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="reportTime" data-value="fast"><div class="text-base font-semibold text-blue">Under 30 minutes</div><div class="text-xs text-gray-400 mt-0.5">Dashboards and reports are ready-built</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="reportTime" data-value="hours"><div class="text-base font-semibold text-blue">1&#8211;2 hours</div><div class="text-xs text-gray-400 mt-0.5">Some manual pulling and formatting</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="reportTime" data-value="halfday"><div class="text-base font-semibold text-blue">Half a day or more</div><div class="text-xs text-gray-400 mt-0.5">Pulling from multiple systems</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="reportTime" data-value="fullday"><div class="text-base font-semibold text-blue">Full day or longer</div><div class="text-xs text-gray-400 mt-0.5">Significant manual data work</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q11-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q12: Exit Tracking -->
+        <div class="question-panel" id="q12">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 12 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">Do they know why their employees leave?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Organizations that track exit reasons reduce voluntary turnover by 18&#8211;26%.</strong></div>
+            <div class="choice-grid grid grid-cols-2 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="exitTracking" data-value="yes"><div class="text-base font-semibold text-blue">Yes &#8212; they track it consistently</div><div class="text-xs text-gray-400 mt-0.5">Exit interviews or stay conversations</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="exitTracking" data-value="sometimes"><div class="text-base font-semibold text-blue">Sometimes &#8212; inconsistently</div><div class="text-xs text-gray-400 mt-0.5">Depends on the manager</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="exitTracking" data-value="rarely"><div class="text-base font-semibold text-blue">Rarely</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="exitTracking" data-value="no"><div class="text-base font-semibold text-blue">No &#8212; no formal process</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q12-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q13: Recognition -->
+        <div class="question-panel" id="q13">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 13 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">Do they have a structured employee recognition or performance feedback program?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Companies with no recognition program have 2&times; higher voluntary turnover.</strong></div>
+            <div class="choice-grid grid grid-cols-3 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="recognitionProgram" data-value="formal"><div class="text-base font-semibold text-blue">Yes &#8212; formal program</div><div class="text-xs text-gray-400 mt-0.5">Structured peer/manager recognition</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="recognitionProgram" data-value="informal"><div class="text-base font-semibold text-blue">Informal &#8212; ad hoc only</div><div class="text-xs text-gray-400 mt-0.5">Manager-driven, inconsistent</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="recognitionProgram" data-value="none"><div class="text-base font-semibold text-blue">No program</div><div class="text-xs text-gray-400 mt-0.5">Nothing structured in place</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q13-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q14: EWA -->
+        <div class="question-panel" id="q14">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 14 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">Do their employees have access to earned wages between paydays?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">89% of employees with Earned Wage Access report lower financial stress.</strong></div>
+            <div class="choice-grid grid grid-cols-3 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="ewaAccess" data-value="yes"><div class="text-base font-semibold text-blue">Yes &#8212; they offer EWA</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="ewaAccess" data-value="no"><div class="text-base font-semibold text-blue">No &#8212; standard payday only</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="ewaAccess" data-value="unsure"><div class="text-base font-semibold text-blue">Not sure</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q14-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q15: Onboarding -->
+        <div class="question-panel" id="q15">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 15 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">How are new hires onboarded?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Paper onboarding takes 3&#8211;5 hours of HR and manager time per hire.</strong></div>
+            <div class="choice-grid grid grid-cols-3 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="onboardingMethod" data-value="digital"><div class="text-base font-semibold text-blue">Fully digital &#8212; one platform</div><div class="text-xs text-gray-400 mt-0.5">Connected to payroll and HR</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="onboardingMethod" data-value="partial"><div class="text-base font-semibold text-blue">Partially digital</div><div class="text-xs text-gray-400 mt-0.5">Mix of digital and paper</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="onboardingMethod" data-value="paper"><div class="text-base font-semibold text-blue">Mostly paper forms</div><div class="text-xs text-gray-400 mt-0.5">Manual entry into systems</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q15-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q16: Time to Fill -->
+        <div class="question-panel" id="q16">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 16 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">What is their average time-to-fill for open roles?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Every extra week an hourly role sits open costs roughly 40 hours of lost productivity.</strong></div>
+            <div class="choice-grid grid grid-cols-2 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="timeToFill" data-value="fast"><div class="text-base font-semibold text-blue">Under 2 weeks</div><div class="text-xs text-gray-400 mt-0.5">Recruiting pipeline is strong</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="timeToFill" data-value="month"><div class="text-base font-semibold text-blue">2&#8211;4 weeks</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="timeToFill" data-value="twomonths"><div class="text-base font-semibold text-blue">1&#8211;2 months</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="timeToFill" data-value="slow"><div class="text-base font-semibold text-blue">2+ months</div><div class="text-xs text-gray-400 mt-0.5">Hiring is a recurring bottleneck</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q16-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q17: Compliance Issues -->
+        <div class="question-panel" id="q17">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 17 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">Have they had any payroll tax notices, ACA filing issues, or benefits enrollment errors in the last two years?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Even one tax notice costs $8,000&#8211;$25,000 to resolve.</strong></div>
+            <div class="choice-grid grid grid-cols-2 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="complianceIssues" data-value="none"><div class="text-base font-semibold text-blue">None &#8212; clean record</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="complianceIssues" data-value="1-2"><div class="text-base font-semibold text-blue">1&#8211;2 issues</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="complianceIssues" data-value="3plus"><div class="text-base font-semibold text-blue">3+ issues</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="complianceIssues" data-value="financial"><div class="text-base font-semibold text-blue">Yes &#8212; with financial impact</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q17-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q18: ACA Tracking -->
+        <div class="question-panel" id="q18">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 18 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">Do they track ACA eligibility, benefits enrollment, and COBRA automatically or mostly manually?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">The 2025 IRS ACA penalty is $2,970 per uncovered full-time employee.</strong></div>
+            <div class="choice-grid grid grid-cols-3 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="acaTracking" data-value="automated"><div class="text-base font-semibold text-blue">Automated &#8212; system handles it</div><div class="text-xs text-gray-400 mt-0.5">Alerts, filings, enrollment auto-tracked</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="acaTracking" data-value="partial"><div class="text-base font-semibold text-blue">Partially automated</div><div class="text-xs text-gray-400 mt-0.5">Some manual steps required</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="acaTracking" data-value="manual"><div class="text-base font-semibold text-blue">Mostly manual / not sure</div><div class="text-xs text-gray-400 mt-0.5">Tracked in spreadsheets or not at all</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q18-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q19: Timekeeping -->
+        <div class="question-panel" id="q19">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 19 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">How is employee time tracked at their organization?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Paper timesheets average a 4.5% time theft rate</strong> and create FLSA audit exposure.</div>
+            <div class="choice-grid grid grid-cols-2 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="timekeeping" data-value="biometric"><div class="text-base font-semibold text-blue">Biometric or digital clock</div><div class="text-xs text-gray-400 mt-0.5">Fingerprint, facial, or hardware terminal</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="timekeeping" data-value="app"><div class="text-base font-semibold text-blue">Mobile app or web punch</div><div class="text-xs text-gray-400 mt-0.5">GPS or device-based</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="timekeeping" data-value="manager"><div class="text-base font-semibold text-blue">Manager enters time</div><div class="text-xs text-gray-400 mt-0.5">Manually entered per pay period</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="timekeeping" data-value="paper"><div class="text-base font-semibold text-blue">Paper timesheets</div><div class="text-xs text-gray-400 mt-0.5">Handwritten, keyed in later</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q19-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q20: System Integration -->
+        <div class="question-panel" id="q20">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 20 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">Does their HR, payroll, time, and benefits data live in one system &#8212; or do they re-enter information between platforms?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Manual data re-entry introduces errors at 1&#8211;4% per entry.</strong><br><span class="text-gray-400 mt-1 block" id="q20-integrations"></span></div>
+            <div class="choice-grid grid grid-cols-3 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="systemIntegration" data-value="fully"><div class="text-base font-semibold text-blue">Fully integrated &#8212; one system</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="systemIntegration" data-value="partially"><div class="text-base font-semibold text-blue">Partially integrated &#8212; some manual steps</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="systemIntegration" data-value="manual"><div class="text-base font-semibold text-blue">Significant manual re-entry</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q20-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q21: First Paycheck -->
+        <div class="question-panel" id="q21">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 21 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">How long does it take a new hire to receive their first paycheck?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">Nearly 1 in 3 hourly workers who quit in their first 90 days cite pay timing as a factor.</strong></div>
+            <div class="choice-grid grid grid-cols-2 gap-3 mb-7 max-[560px]:grid-cols-1">
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="firstPaycheck" data-value="fast"><div class="text-base font-semibold text-blue">Same day or next day</div><div class="text-xs text-gray-400 mt-0.5">Onboarding and pay are connected</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="firstPaycheck" data-value="week"><div class="text-base font-semibold text-blue">3 to 5 business days</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="firstPaycheck" data-value="twoweeks"><div class="text-base font-semibold text-blue">1 to 2 weeks</div></div>
+                <div class="px-5 py-4 text-left transition-colors bg-white border border-gray-200 cursor-pointer choice-card rounded-xl hover:border-blue-500" data-field="firstPaycheck" data-value="slow"><div class="text-base font-semibold text-blue">More than 2 weeks</div><div class="text-xs text-gray-400 mt-0.5">Common with manual onboarding</div></div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q21-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+            </div>
+        </div>
+
+        <!-- Q22: Top Problem -->
+        <div class="question-panel" id="q22">
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-[0.08em] mb-3">Question 22 of 22</div>
+            <h2 class="font-sans text-[clamp(24px,4vw,36px)] text-blue leading-[1.2] mb-5">If this prospect could fix one HR or payroll problem tomorrow, what would it be?</h2>
+            <div class="bg-blue-50 border-l-0.5 border-blue-600 rounded-md px-4 py-3 lead--small text-gray-500 mb-7 leading-[1.5]">&#128202; <strong class="text-blue">This shapes the module recommendations in the proposal.</strong></div>
+            <textarea class="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-3.5 text-sm text-blue resize-none h-[100px] mb-4 focus:outline-none focus:border-blue-600 transition-colors placeholder-gray-400" id="q22-text" placeholder="Describe their top pain point..."></textarea>
+            <div class="flex flex-wrap gap-2.5 mb-5" id="tag-grid">
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Payroll errors">Payroll errors</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="OT overages">OT overages</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="High turnover">High turnover</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Slow onboarding">Slow onboarding</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Scheduling &amp; callouts">Scheduling &amp; callouts</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Slow first paycheck">Slow first paycheck</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Tipped wage complexity">Tipped wage complexity</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Multi-location visibility">Multi-location visibility</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Compliance surprises">Compliance surprises</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Open enrollment chaos">Open enrollment chaos</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Manual data re-entry">Manual data re-entry</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Report building">Report building</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Employee questions">Employee questions</span>
+                <span class="px-4 py-2 font-medium text-gray-500 transition-colors bg-white border-2 border-gray-200 rounded-full cursor-pointer tag-pill text-sm hover:border-blue-600 hover:text-blue" data-tag="Benefits confusion">Benefits confusion</span>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200">
+                <button id="q22-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
+                <button id="btn-generate" class="btn btn--primary">Generate Proposal Score &#8594;</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ═══════════ SCREEN: LOADING ═══════════ -->
+<div id="screen-loading" class="flex-col screen min-h-dvh" style="padding-top:56px;">
+    <div class="flex flex-col items-center justify-center flex-1 py-[100px] px-10">
+        <svg viewBox="0 0 28 28" style="width:40px;height:40px;margin:0 auto 20px;display:block;"><rect width="28" height="28" rx="7" fill="#3dc87e"></rect><text x="14" y="20" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="15" fill="white">N</text></svg>
+        <div class="w-[60px] h-[60px] border-[3px] border-white/15 border-t-white/85 rounded-full animate-spin mx-auto mb-9"></div>
+        <ul class="inline-block text-left list-none loading-steps" id="loading-steps">
+            <li class="text-[15px] text-white/40 py-1.5 pl-7 relative" id="step1">Analyzing discovery answers</li>
+            <li class="text-[15px] text-white/40 py-1.5 pl-7 relative" id="step2">Benchmarking against industry data</li>
+            <li class="text-[15px] text-white/40 py-1.5 pl-7 relative" id="step3">Calculating PPRS™ score</li>
+            <li class="text-[15px] text-white/40 py-1.5 pl-7 relative" id="step4">Building proposal content</li>
+        </ul>
+    </div>
+</div>
+
+
+<!-- ═══════════ SCREEN: RESULTS ═══════════ -->
+<div id="screen-results" class="flex-col screen min-h-dvh" style="padding-top:56px;">
+
+    <!-- ══ RESULTS HERO ══ -->
+    <div class="results-hero-v2">
+        <div style="position:absolute;top:-120px;right:-80px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="position:absolute;bottom:-100px;left:10%;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%);pointer-events:none;"></div>
+
+        <div class="hero-inner">
+            <!-- AE badge + prospect info -->
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+                <span style="background:#F59E0B;color:#0a1628;font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:20px;">AE INTERNAL</span>
+                <span style="font-size:12px;color:rgba(255,255,255,0.5);">Prospect: <strong style="color:rgba(255,255,255,0.85);" id="hero-prospect-name">—</strong></span>
+                <span style="font-size:12px;color:rgba(255,255,255,0.4);" id="hero-prospect-contact"></span>
+            </div>
+
+            <p style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:20px;">People &amp; Payroll Readiness Score&#8482;</p>
+
+            <!-- Score + Opportunity + Transform -->
+            <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;align-items:center;margin-bottom:48px;">
+                <div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px;">Their Score Today</div>
+                    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:16px;">
+                        <span style="font-family:'Inter',sans-serif;font-size:100px;font-weight:900;color:#fff;line-height:.9;letter-spacing:-4px;" id="score-display">—</span>
+                        <span style="font-size:24px;color:rgba(255,255,255,.3);font-weight:400;align-self:flex-end;padding-bottom:8px;">/ 100</span>
+                    </div>
+                    <div id="score-grade" class="score-grade mid"></div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 32px;">
+                    <div style="font-size:28px;color:#F59E0B;font-weight:700;">&rarr;</div>
+                    <div style="font-size:10px;font-weight:600;letter-spacing:1px;color:rgba(255,255,255,.3);text-transform:uppercase;">on Netchex</div>
+                </div>
+                <div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px;">Projected with Netchex</div>
+                    <div style="font-family:'Inter',sans-serif;font-size:100px;font-weight:900;color:#3dc87e;line-height:.9;letter-spacing:-4px;margin-bottom:16px;" id="score-netchex-hero">—</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.4);">industry avg for Netchex clients</div>
+                </div>
+                <div style="width:1px;background:rgba(255,255,255,.1);align-self:stretch;margin:0 36px;"></div>
+                <div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px;">Annual Opportunity</div>
+                    <div style="font-family:'Inter',sans-serif;font-size:80px;font-weight:900;color:#3dc87e;line-height:.9;letter-spacing:-3px;margin-bottom:16px;" id="savings-display">—</div>
+                    <p style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.5;margin:0;">across payroll, time, retention &amp; compliance<br><span style="color:rgba(255,255,255,.25);font-size:12px;" id="results-company-meta"></span></p>
+                </div>
+            </div>
+
+            <!-- Benchmark bar -->
+            <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:22px 28px;margin-bottom:28px;">
+                <div style="position:relative;height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin-bottom:20px;">
+                    <div style="position:absolute;left:0;top:0;height:100%;border-radius:3px;transition:width 1.2s ease;background:#f59e0b;" id="bm-you-bar"></div>
+                    <div style="position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border:3px solid #07101f;border-radius:50%;background:#f59e0b;" id="bm-marker"></div>
+                    <div style="position:absolute;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;background:#64748b;border:2px solid #07101f;border-radius:50%;" id="bm-baseline-marker"></div>
+                    <div style="position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:#3dc87e;border:3px solid #07101f;border-radius:50%;" id="bm-netchex-marker"></div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
+                        <div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;"></div><span style="font-size:12px;font-weight:700;color:#f59e0b;">This Prospect: <span id="bm-val-you">—</span></span></div>
+                        <div style="display:flex;align-items:center;gap:6px;"><div style="width:7px;height:7px;border-radius:50%;background:#64748b;"></div><span style="font-size:12px;color:#64748b;">Industry avg: <span id="bm-val-baseline">—</span></span></div>
+                        <div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:#3dc87e;"></div><span style="font-size:12px;font-weight:700;color:#3dc87e;">Netchex avg: <span id="bm-val-netchex">—</span></span></div>
+                    </div>
+                    <div style="background:rgba(61,200,126,.12);border:1px solid rgba(61,200,126,.25);border-radius:8px;padding:8px 14px;max-width:420px;">
+                        <p style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.5;margin:0;" id="at-benchmark-callout"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat pills + Generate PDF button -->
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;" id="results-stat-pills"></div>
+                <button id="btn-generate-proposal" onclick="generateProposalPdf()" style="background:#F59E0B;color:#0a1628;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:Inter,sans-serif;display:flex;align-items:center;gap:7px;box-shadow:0 4px 14px rgba(245,158,11,.35);">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M4 6l4 4 4-4M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#0a1628" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Generate Proposal PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SCORE TRANSFORMATION CARD ══ -->
+    <section style="background:#f4f6fb;padding:40px 40px 0;">
+        <div style="max-width:1100px;margin:0 auto;">
+            <div class="score-transform-card">
+                <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;align-items:center;">
+                    <div style="text-align:center;">
+                        <div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px;">Where They Are Today</div>
+                        <div style="font-family:'Inter',sans-serif;font-size:72px;font-weight:900;color:rgba(255,255,255,.7);line-height:1;" id="transform-score-today">—</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:6px;">/ 100</div>
+                    </div>
+                    <div style="padding:0 28px;text-align:center;">
+                        <div style="font-size:32px;color:#F59E0B;">&rarr;</div>
+                        <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:1px;text-transform:uppercase;margin-top:4px;">Gap: <span id="transform-gap-val">—</span> pts</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px;">Netchex Client Average</div>
+                        <div style="font-family:'Inter',sans-serif;font-size:72px;font-weight:900;color:#3dc87e;line-height:1;" id="transform-score-netchex">—</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:6px;">/ 100+</div>
+                    </div>
+                    <div style="width:1px;background:rgba(255,255,255,.1);align-self:stretch;margin:0 32px;"></div>
+                    <div>
+                        <div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:12px;">Recovery Statement</div>
+                        <p style="font-size:14px;color:rgba(255,255,255,.75);line-height:1.6;margin:0;" id="transform-recovery-text">—</p>
+                    </div>
+                </div>
+                <!-- Progress bar -->
+                <div style="margin-top:24px;">
+                    <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.3);margin-bottom:6px;"><span>0</span><span>100</span></div>
+                    <div style="height:8px;background:rgba(255,255,255,.1);border-radius:4px;position:relative;">
+                        <div style="height:100%;background:rgba(255,255,255,.3);border-radius:4px;transition:width 1.2s ease;" id="transform-bar-current"></div>
+                        <div style="position:absolute;top:0;height:100%;background:#3dc87e;border-radius:4px;opacity:0.5;transition:width 1.4s ease;" id="transform-bar-netchex"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:6px;flex-wrap:wrap;gap:8px;">
+                        <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:4px;background:rgba(255,255,255,.3);border-radius:2px;"></div><span style="font-size:11px;color:rgba(255,255,255,.4);">Current: <span id="transform-bar-label-current">—</span></span></div>
+                        <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:4px;background:#3dc87e;border-radius:2px;opacity:0.6;"></div><span style="font-size:11px;color:rgba(255,255,255,.4);">Netchex avg: <span id="transform-bar-label-netchex">—</span></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ SCORE BREAKDOWN — 4 pillars ══ -->
+    <section id="score-breakdown-section" style="background:#f4f6fb;padding:32px 40px 64px;">
+        <div style="max-width:1100px;margin:0 auto;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:36px;">
+                <div>
+                    <p style="font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#6b7a99;margin-bottom:10px;">Score Breakdown</p>
+                    <h2 style="font-family:'Inter',sans-serif;font-size:26px;font-weight:800;color:#0d1f4e;line-height:1.2;margin-bottom:8px;">Four gaps. Four costs. One score.</h2>
+                    <p style="font-size:14px;color:#6b7a99;line-height:1.6;margin:0;max-width:640px;">Each pillar maps to a real dollar cost. Left: their current position. Right: what it's costing annually.</p>
+                </div>
+                <button onclick="generateProposalPdf()" style="background:#F59E0B;color:#0a1628;border:none;padding:12px 22px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">&#8595; Generate Proposal PDF</button>
+            </div>
+
+            <!-- Card 1: Drive Engagement -->
+            <div class="unified-card">
+                <div class="unified-card-header">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#dc2626;white-space:nowrap;">&#128293; Drive Engagement</span>
+                        <div style="flex:1;max-width:100px;height:4px;background:#f1f5f9;border-radius:2px;overflow:hidden;"><div style="height:100%;border-radius:2px;transition:width 1.4s ease;" id="p-engagement-bar"></div></div>
+                        <span style="font-size:18px;font-weight:800;color:#0d1f4e;white-space:nowrap;"><span id="p-engagement">—</span><span style="font-size:12px;color:#cbd5e1;font-weight:400;">/25</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;border-left:1px solid #e2e8f0;padding-left:16px;">
+                        <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;white-space:nowrap;">Excessive Turnover</span>
+                        <span style="font-size:18px;font-weight:800;color:#dc2626;" id="p-engagement-cost-label">—</span>
+                    </div>
+                </div>
+                <div class="unified-card-body">
+                    <div class="unified-card-half">
+                        <div class="unified-card-half-label">Their Score</div>
+                        <p style="font-size:13px;color:#4a5568;line-height:1.6;margin-bottom:14px;" id="p-engagement-desc">Loading...</p>
+                        <div class="unified-card-mini-stats">
+                            <div><div class="mini-stat-val">2&times;</div><div class="mini-stat-lbl">lower turnover</div></div>
+                            <div class="mini-stat-divider"><div class="mini-stat-val">91%</div><div class="mini-stat-lbl">retention w/ tools</div></div>
+                            <div><div class="mini-stat-val">4&times;</div><div class="mini-stat-lbl">more feedback</div></div>
+                        </div>
+                        <div id="p-engagement-gap-section"></div>
+                    </div>
+                    <div class="unified-card-divider"></div>
+                    <div class="unified-card-half">
+                        <div class="unified-card-half-label">What It's Costing</div>
+                        <div class="cost-math-pill" id="p-engagement-math">Calculating...</div>
+                        <p style="font-size:13px;color:#4a5568;line-height:1.6;margin-bottom:8px;" id="p-engagement-cost-body"></p>
+                        <p style="font-size:11px;color:#6b7a99;line-height:1.55;"><strong style="color:#0d1f4e;">The nuance:</strong> First-90-day exits are the most preventable. Recognition + structured onboarding yield 20&ndash;40% reductions in year one.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Save Dollars -->
+            <div class="unified-card">
+                <div class="unified-card-header">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#d97706;white-space:nowrap;">&#128176; Save Dollars</span>
+                        <div style="flex:1;max-width:100px;height:4px;background:#f1f5f9;border-radius:2px;overflow:hidden;"><div style="height:100%;border-radius:2px;transition:width 1.4s ease;" id="p-dollars-bar"></div></div>
+                        <span style="font-size:18px;font-weight:800;color:#0d1f4e;white-space:nowrap;"><span id="p-dollars">—</span><span style="font-size:12px;color:#cbd5e1;font-weight:400;">/25</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;border-left:1px solid #e2e8f0;padding-left:16px;">
+                        <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;white-space:nowrap;">Payroll Errors &amp; OT Bleed</span>
+                        <span style="font-size:18px;font-weight:800;color:#d97706;" id="p-dollars-cost-label">—</span>
+                    </div>
+                </div>
+                <div class="unified-card-body">
+                    <div class="unified-card-half">
+                        <div class="unified-card-half-label">Their Score</div>
+                        <p style="font-size:13px;color:#4a5568;line-height:1.6;margin-bottom:14px;" id="p-dollars-desc">Loading...</p>
+                        <div class="unified-card-mini-stats">
+                            <div><div class="mini-stat-val">46%</div><div class="mini-stat-lbl">payroll improvement</div></div>
+                            <div class="mini-stat-divider"><div class="mini-stat-val">15 min</div><div class="mini-stat-lbl">saved per pay run</div></div>
+                            <div><div class="mini-stat-val">2.2%</div><div class="mini-stat-lbl">time fraud reduction</div></div>
+                        </div>
+                        <div id="p-dollars-gap-section"></div>
+                    </div>
+                    <div class="unified-card-divider"></div>
+                    <div class="unified-card-half">
+                        <div class="unified-card-half-label">What It's Costing</div>
+                        <div class="cost-math-pill" id="p-dollars-math">Calculating...</div>
+                        <p style="font-size:13px;color:#4a5568;line-height:1.6;margin-bottom:8px;" id="p-dollars-cost-body"></p>
+                        <p style="font-size:11px;color:#6b7a99;line-height:1.55;"><strong style="color:#0d1f4e;">The nuance:</strong> Pay errors erode trust. Employees who experience payroll mistakes are 2.5&times; more likely to resign.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Reduce Risk -->
+            <div class="unified-card">
+                <div class="unified-card-header">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#7c3aed;white-space:nowrap;">&#128737; Reduce Risk</span>
+                        <div style="flex:1;max-width:100px;height:4px;background:#f1f5f9;border-radius:2px;overflow:hidden;"><div style="height:100%;border-radius:2px;transition:width 1.4s ease;" id="p-risk-bar"></div></div>
+                        <span style="font-size:18px;font-weight:800;color:#0d1f4e;white-space:nowrap;"><span id="p-risk">—</span><span style="font-size:12px;color:#cbd5e1;font-weight:400;">/25</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;border-left:1px solid #e2e8f0;padding-left:16px;">
+                        <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;white-space:nowrap;">ACA &amp; FLSA Exposure</span>
+                        <span style="font-size:18px;font-weight:800;color:#7c3aed;" id="p-risk-cost-label">—</span>
+                    </div>
+                </div>
+                <div class="unified-card-body">
+                    <div class="unified-card-half">
+                        <div class="unified-card-half-label">Their Score</div>
+                        <p style="font-size:13px;color:#4a5568;line-height:1.6;margin-bottom:14px;" id="p-risk-desc">Loading...</p>
+                        <div class="unified-card-mini-stats">
+                            <div><div class="mini-stat-val">65%</div><div class="mini-stat-lbl">risk eliminated</div></div>
+                            <div class="mini-stat-divider"><div class="mini-stat-val">$1K+</div><div class="mini-stat-lbl">FLSA/employee</div></div>
+                            <div><div class="mini-stat-val">46%</div><div class="mini-stat-lbl">payroll accuracy gain</div></div>
+                        </div>
+                        <div id="p-risk-gap-section"></div>
+                    </div>
+                    <div class="unified-card-divider"></div>
+                    <div class="unified-card-half">
+                        <div class="unified-card-half-label">What It's Costing</div>
+                        <div class="cost-math-pill" id="p-risk-math">Calculating...</div>
+                        <p style="font-size:13px;color:#4a5568;line-height:1.6;margin-bottom:8px;" id="p-risk-cost-body"></p>
+                        <p style="font-size:11px;color:#6b7a99;line-height:1.55;"><strong style="color:#0d1f4e;">The nuance:</strong> An ACA dispute or wage complaint consumes 40&ndash;80 hours of HR and legal time.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Save Time -->
+            <div class="unified-card">
+                <div class="unified-card-header">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#2563eb;white-space:nowrap;">&#9201; Save Time</span>
+                        <div style="flex:1;max-width:100px;height:4px;background:#f1f5f9;border-radius:2px;overflow:hidden;"><div style="height:100%;border-radius:2px;transition:width 1.4s ease;" id="p-time-bar"></div></div>
+                        <span style="font-size:18px;font-weight:800;color:#0d1f4e;white-space:nowrap;"><span id="p-time">—</span><span style="font-size:12px;color:#cbd5e1;font-weight:400;">/25</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;border-left:1px solid #e2e8f0;padding-left:16px;">
+                        <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;white-space:nowrap;">Manual HR Administration</span>
+                        <span style="font-size:18px;font-weight:800;color:#2563eb;" id="p-time-cost-label">—</span>
+                    </div>
+                </div>
+                <div class="unified-card-body">
+                    <div class="unified-card-half">
+                        <div class="unified-card-half-label">Their Score</div>
+                        <p style="font-size:13px;color:#4a5568;line-height:1.6;margin-bottom:14px;" id="p-time-desc">Loading...</p>
+                        <div class="unified-card-mini-stats">
+                            <div><div class="mini-stat-val">80%</div><div class="mini-stat-lbl">onboarding reduction</div></div>
+                            <div class="mini-stat-divider"><div class="mini-stat-val">4 hrs/wk</div><div class="mini-stat-lbl">reclaimed via AskHR</div></div>
+                            <div><div class="mini-stat-val">62%</div><div class="mini-stat-lbl">reporting efficiency</div></div>
+                        </div>
+                        <div id="p-time-gap-section"></div>
+                    </div>
+                    <div class="unified-card-divider"></div>
+                    <div class="unified-card-half">
+                        <div class="unified-card-half-label">What It's Costing</div>
+                        <div class="cost-math-pill" id="p-time-math">Calculating...</div>
+                        <p style="font-size:13px;color:#4a5568;line-height:1.6;margin-bottom:8px;" id="p-time-cost-body"></p>
+                        <p style="font-size:11px;color:#6b7a99;line-height:1.55;"><strong style="color:#0d1f4e;">The nuance:</strong> Manual processes breed errors. Every re-entry is a potential payroll mistake.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ MODULE RECOMMENDATIONS ══ -->
+    <section style="background:#f4f6fb;padding:0 40px 64px;">
+        <div style="max-width:1100px;margin:0 auto;">
+            <p style="font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#1a8c4e;margin-bottom:10px;">How Netchex Closes These Gaps</p>
+            <h2 style="font-family:'Inter',sans-serif;font-size:26px;font-weight:800;color:#0d1f4e;margin-bottom:8px;">Their path from <span id="score-from-label">—</span> to <span id="score-to-label">—</span>.</h2>
+            <p style="font-size:14px;color:#6b7a99;line-height:1.6;margin-bottom:36px;max-width:600px;">Each module maps directly to a gap in their assessment — specific capabilities driving their cost exposure.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px;" id="module-grid"></div>
+            <div style="background:#fff;border:1px solid #a7f3d0;border-radius:12px;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;gap:32px;">
+                <div style="flex:1;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:1px;color:#059669;text-transform:uppercase;margin-bottom:8px;">Projected Score Impact</div>
+                    <p style="font-size:14px;color:#0d1f4e;line-height:1.6;margin:0;" id="score-impact-text">—</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:20px;flex-shrink:0;">
+                    <div style="text-align:center;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:600;">Today</div><div style="font-size:36px;font-weight:800;color:#94a3b8;line-height:1;" id="score-today-label">—</div></div>
+                    <div style="font-size:22px;color:#1a8c4e;font-weight:700;">&rarr;</div>
+                    <div style="text-align:center;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:600;">With Netchex</div><div style="font-size:36px;font-weight:800;color:#1a8c4e;line-height:1;" id="score-netchex-label">—</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ NARRATIVE ══ -->
+    <section style="background:#fff;padding:64px 40px;border-top:1px solid #e2e8f0;">
+        <div style="max-width:1100px;margin:0 auto;">
+            <p style="font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#1a8c4e;margin-bottom:10px;">What This Means</p>
+            <h2 style="font-family:'Inter',sans-serif;font-size:26px;font-weight:800;color:#0d1f4e;margin-bottom:8px;">The story behind the score.</h2>
+            <p style="font-size:14px;color:#6b7a99;margin-bottom:28px;max-width:600px;line-height:1.6;" id="success-industry-label"></p>
+            <div style="background:#f8fafb;border:1px solid #e2e8f0;border-left:4px solid #1a8c4e;border-radius:12px;padding:28px 32px;margin-bottom:24px;" id="narrative-box"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="success-outcomes"></div>
+        </div>
+    </section>
+
+    <!-- ══ INVESTMENT / BUSINESS CASE ══ -->
+    <section style="background:#f4f6fb;padding:64px 40px;">
+        <div style="max-width:1100px;margin:0 auto;">
+            <p style="font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#6b7a99;margin-bottom:10px;">The Business Case</p>
+            <h2 style="font-family:'Inter',sans-serif;font-size:26px;font-weight:800;color:#0d1f4e;margin-bottom:32px;">Investment &amp; ROI Analysis</h2>
+
+            <!-- Current spend comparison (shown if spend filled) -->
+            <div id="spend-comparison" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;margin-bottom:24px;">
+                <div style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#6b7a99;margin-bottom:16px;">HCM Cost Comparison</div>
+                <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;align-items:center;text-align:center;">
+                    <div>
+                        <div style="font-size:10px;color:#94a3b8;margin-bottom:6px;">Current Spend</div>
+                        <div style="font-size:28px;font-weight:800;color:#dc2626;" id="spend-current">—</div>
+                        <div style="font-size:11px;color:#94a3b8;margin-top:3px;">/ year</div>
+                    </div>
+                    <div style="padding:0 16px;color:#94a3b8;font-size:20px;">vs</div>
+                    <div>
+                        <div style="font-size:10px;color:#94a3b8;margin-bottom:6px;">Netchex Estimated</div>
+                        <div style="font-size:28px;font-weight:800;color:#0d1f4e;" id="spend-netchex">—</div>
+                        <div style="font-size:11px;color:#94a3b8;margin-top:3px;">/ year</div>
+                    </div>
+                    <div style="padding:0 16px;color:#94a3b8;font-size:20px;">=</div>
+                    <div>
+                        <div style="font-size:10px;color:#94a3b8;margin-bottom:6px;">Net Investment Change</div>
+                        <div style="font-size:28px;font-weight:800;" id="spend-delta">—</div>
+                        <div style="font-size:11px;color:#94a3b8;margin-top:3px;">/ year</div>
+                    </div>
+                </div>
+            </div>
+            <div id="spend-placeholder" style="display:none;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin-bottom:24px;font-size:13px;color:#92400e;">
+                Add current HCM spend to the discovery fields to calculate net cost comparison.
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+                <!-- Savings table -->
+                <div class="investment-card">
+                    <div class="investment-card-header"><h3 style="font-size:14px;font-weight:700;color:#fff;margin:0;">Projected Annual Savings Breakdown</h3></div>
+                    <div style="padding:0 20px;" id="savings-breakdown-table"></div>
+                </div>
+                <!-- ROI cards -->
+                <div style="display:flex;flex-direction:column;gap:14px;">
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;text-align:center;">
+                        <div style="font-size:11px;color:#6b7a99;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Est. Annual Netchex Investment</div>
+                        <div style="font-size:36px;font-weight:800;color:#0d1f4e;line-height:1;" id="investment-amount">—</div>
+                        <div style="font-size:12px;color:#94a3b8;margin-top:4px;">platform only &middot; add-ons vary</div>
+                    </div>
+                    <!-- ROI scenarios -->
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+                        <div style="background:#0d1f4e;padding:12px 18px;"><div style="font-size:12px;font-weight:700;color:#fff;">ROI Scenarios</div></div>
+                        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px;" id="roi-scenarios"></div>
+                    </div>
+                    <div style="background:#0d1f4e;border-radius:12px;padding:20px;text-align:center;">
+                        <div style="font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ROI — Year 1 (Expected)</div>
+                        <div style="font-size:48px;font-weight:800;color:#3dc87e;line-height:1;" id="roi-multiple">—</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px;">return on Netchex investment</div>
+                    </div>
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;text-align:center;">
+                        <div style="font-size:11px;color:#6b7a99;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Payback Period</div>
+                        <div style="font-size:36px;font-weight:800;color:#0d1f4e;line-height:1;" id="payback-period">—</div>
+                        <div style="font-size:12px;color:#94a3b8;margin-top:4px;">conservative estimate</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sources -->
+            <div style="margin-top:20px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px 18px;">
+                <div style="font-size:11px;font-weight:600;color:#6b7a99;margin-bottom:6px;">&#128206; Data Sources &amp; Methodology</div>
+                <p style="font-size:11px;color:#94a3b8;line-height:1.6;margin:0;"><a href="https://www.bls.gov/jlt/" target="_blank" rel="noopener" style="color:#94a3b8;">BLS JOLTS 2024</a> &middot; <a href="https://www.shrm.org/topics-tools/research/benchmarking" target="_blank" rel="noopener" style="color:#94a3b8;">SHRM Benchmarking</a> &middot; FLSA enforcement data &middot; Netchex platform data &middot; NSI Retention Report 2025 &middot; APA Payroll Administration Survey &middot; Deloitte HR automation data &middot; Gallup Workplace Research &middot; NRA State of the Industry 2025 &middot; NADA Workforce Study 2025</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ AE NOTES / DEAL CONTEXT ══ -->
+    <section style="background:#fff;padding:40px 40px;border-top:1px solid #e2e8f0;" id="ae-context-section">
+        <div style="max-width:1100px;margin:0 auto;">
+            <p style="font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#F59E0B;margin-bottom:10px;">AE Context — Internal Only</p>
+            <h2 style="font-family:'Inter',sans-serif;font-size:20px;font-weight:800;color:#0d1f4e;margin-bottom:20px;">Discovery Summary</h2>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" id="ae-context-grid"></div>
+        </div>
+    </section>
+
+    <!-- ══ GENERATE PDF CTA ══ -->
+    <section style="background:#0d1f4e;padding:64px 40px;text-align:center;">
+        <div style="max-width:560px;margin:0 auto;">
+            <p style="font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#F59E0B;margin-bottom:16px;">Ready to Send?</p>
+            <h2 style="font-size:32px;font-weight:800;color:#fff;line-height:1.1;margin-bottom:12px;"><span id="cta-savings-headline">—</span> opportunity identified.</h2>
+            <p style="font-size:15px;color:rgba(255,255,255,.6);line-height:1.65;margin-bottom:32px;">Generate a polished proposal PDF to include in your next conversation with <span id="cta-prospect-name">this prospect</span>.</p>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+                <button onclick="generateProposalPdf()" style="background:#F59E0B;color:#0a1628;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;border:none;">&#8595; Generate Proposal PDF</button>
+                <button onclick="window.print()" style="background:rgba(255,255,255,.1);color:#fff;padding:14px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.2);">Print / Save</button>
+            </div>
+            <p style="font-size:12px;color:rgba(255,255,255,.3);">&#128274; AE internal tool &nbsp;&middot;&nbsp; Do not share this URL with prospects</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background:#07101f;padding:18px 40px;border-top:1px solid rgba(255,255,255,.07);">
+        <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div style="display:flex;align-items:center;gap:7px;">
+                <svg viewBox="0 0 28 28" style="width:16px;height:16px;"><rect width="28" height="28" rx="7" fill="#3dc87e"></rect><text x="14" y="20" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="15" fill="white">N</text></svg>
+                <span style="font-size:11px;color:rgba(255,255,255,.3);" id="results-footer-industry">netchex.com &middot; AE Internal Tool &middot; Confidential</span>
+            </div>
+            <span style="font-size:11px;color:rgba(255,255,255,.2);">Generated <span id="footer-date"></span></span>
+        </div>
+    </footer>
+
+</div><!-- /#screen-results -->
+
+<!-- PDF loading overlay -->
+<div id="pdf-loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(30,58,138,0.85);z-index:2000;align-items:center;justify-content:center;">
+    <div style="text-align:center;color:#fff;padding:48px 40px;max-width:340px;">
+        <svg style="width:48px;height:48px;margin:0 auto 20px;display:block;animation:pdf-spin 1s linear infinite;" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.25)" stroke-width="3" />
+            <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" stroke-width="3" stroke-linecap="round" />
+        </svg>
+        <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Generating Proposal PDF&hellip;</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:24px;">This usually takes 10&ndash;20 seconds</div>
+        <div style="height:6px;background:rgba(255,255,255,0.2);border-radius:3px;overflow:hidden;">
+            <div id="pdf-progress-bar" style="height:100%;background:#fff;border-radius:3px;width:0%;transition:width 0.4s ease;"></div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   PASSWORD GATE
+════════════════════════════════════════════════════════════════ */
+function checkPassword() {
+    const input = document.getElementById('pw-input');
+    const err   = document.getElementById('pw-error');
+    if (input.value === 'NetchexAE2025') {
+        const overlay = document.getElementById('password-overlay');
+        overlay.classList.add('fade-out');
+        setTimeout(() => { overlay.style.display = 'none'; }, 420);
+    } else {
+        err.style.display = 'block';
+        input.style.borderColor = 'rgba(248,113,113,0.7)';
+        input.focus();
+    }
+}
+function togglePw() {
+    const input = document.getElementById('pw-input');
+    const btn   = document.getElementById('pw-toggle');
+    if (input.type === 'password') { input.type = 'text'; btn.textContent = 'Hide'; }
+    else { input.type = 'password'; btn.textContent = 'Show'; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MAIN QUIZ INIT
+════════════════════════════════════════════════════════════════ */
+function quizInit() {
+
+/* ── DATA ── */
+const INDUSTRY_DATA = {
+    hospitality: { name:'Hospitality', turnover:65, overtime:13, adminHours:18, hourlyWage:21, indexAvg:51, netchexAvg:64 },
+    food:        { name:'Food & Drink', turnover:79, overtime:12, adminHours:20, hourlyWage:20, indexAvg:48, netchexAvg:60 },
+    healthcare:  { name:'Healthcare',  turnover:27, overtime:14, adminHours:22, hourlyWage:30, indexAvg:57, netchexAvg:71 },
+    automotive:  { name:'Automotive',  turnover:45, overtime:18, adminHours:16, hourlyWage:34, indexAvg:55, netchexAvg:69 },
+    building:    { name:'Building Services', turnover:45, overtime:10, adminHours:15, hourlyWage:20, indexAvg:57, netchexAvg:71 },
+    banking:     { name:'Consumer Banking',  turnover:25, overtime:6,  adminHours:14, hourlyWage:26, indexAvg:62, netchexAvg:78 },
+    education:   { name:'Education Services', turnover:28, overtime:5, adminHours:16, hourlyWage:19, indexAvg:61, netchexAvg:76 },
+    retail:      { name:'Retail', turnover:60, overtime:8, adminHours:18, hourlyWage:20, indexAvg:53, netchexAvg:66 },
+    fitness:     { name:'Fitness & Health Clubs', turnover:52, overtime:8, adminHours:15, hourlyWage:17, indexAvg:56, netchexAvg:70 },
+    carwash:     { name:'Car Wash', turnover:80, overtime:10, adminHours:14, hourlyWage:15, indexAvg:50, netchexAvg:63 },
+    lawenforcement: { name:'Sheriff / Public Safety', turnover:12, overtime:20, adminHours:16, hourlyWage:28, indexAvg:61, netchexAvg:76 },
+    other:       { name:'Your Industry', turnover:50, overtime:10, adminHours:17, hourlyWage:20, indexAvg:55, netchexAvg:69 },
+};
+
+const EMP_MIDPOINTS = {
+    '1-25':13,'26-50':38,'51-100':75,'101-250':175,'251-500':375,'501-1000':750,'1000plus':1500
+};
+
+const INDUSTRY_INTEGRATIONS = {
+    hospitality:'Common tools: OPERA (PMS), HotSOS, Revel POS, Silverware, Tripleseat',
+    food:'Common tools: Toast (POS), 7shifts, Restaurant365, Olo, OpenTable',
+    healthcare:'Common tools: Epic, Cerner, AdvancedMD, MatrixCare, Kareo',
+    automotive:'Common tools: CDK Global, Reynolds & Reynolds, DealerSocket, RouteOne, VinSolutions',
+    building:'Common tools: ServiceTitan, Jobber, BuildOps, FieldEdge, Aspire',
+    banking:'Common tools: FiServ, Jack Henry, Symitar, Temenos, NCR Voyix',
+    education:'Common tools: PowerSchool, Skyward, Blackbaud, SchoolAdmin, Frontline',
+    retail:'Common tools: Shopify, Square, Lightspeed, NCR, QuickBooks Point of Sale',
+    fitness:'Common tools: Mindbody, ClubReady, Daxko, ABC Fitness, WellnessLiving',
+    carwash:'Common tools: DRB Systems, Micrologic, WashConnect, Sonny\'s, Everi',
+    lawenforcement:'Common tools: Tyler Technologies, Motorola CAD, Axon, OSSI, CentralSquare',
+    other:'Common tools: QuickBooks, ADP, Paychex, BambooHR, Rippling',
+};
+
+const AT_BENCHMARK = {
+    hospitality:   { pct:64, turnover:'25%', time:'14 hrs/wk', fact:'reduce manager overtime calls by 40%' },
+    food:          { pct:60, turnover:'30%', time:'12 hrs/wk', fact:'cut first-90-day exits nearly in half' },
+    healthcare:    { pct:71, turnover:'22%', time:'16 hrs/wk', fact:'eliminate most credential compliance errors' },
+    automotive:    { pct:69, turnover:'28%', time:'10 hrs/wk', fact:'reduce flat-rate payroll errors by 46%' },
+    building:      { pct:71, turnover:'25%', time:'11 hrs/wk', fact:'automate prevailing-wage compliance' },
+    banking:       { pct:78, turnover:'20%', time:'10 hrs/wk', fact:'cut benefits administration time by 50%' },
+    education:     { pct:76, turnover:'18%', time:'12 hrs/wk', fact:'automate substitute and seasonal payroll' },
+    retail:        { pct:66, turnover:'28%', time:'13 hrs/wk', fact:'reduce schedule-related callouts by 67%' },
+    fitness:       { pct:70, turnover:'25%', time:'10 hrs/wk', fact:'automate instructor session-based pay' },
+    carwash:       { pct:63, turnover:'30%', time:'8 hrs/wk',  fact:'reduce onboarding time from weeks to one day' },
+    lawenforcement:{ pct:76, turnover:'15%', time:'12 hrs/wk', fact:'automate FLSA overtime compliance tracking' },
+    other:         { pct:69, turnover:'25%', time:'12 hrs/wk', fact:'eliminate most manual data re-entry' },
+};
+
+const PILLAR_HOW = {
+    saveDollars: {
+        hospitality:'Shift trade management, approaching-OT alerts, and tip-credit automation stop overtime and compliance costs before they compound.',
+        food:'Real-time OT alerts, tip-pooling compliance, and tipped-wage accuracy eliminate the most common cost overruns in food service.',
+        healthcare:'Differential pay automation, credential-based scheduling, and OT tracking reduce labor cost spikes common in care environments.',
+        automotive:'Flat-rate payroll automation, technician productivity tracking, and commission accuracy eliminate manual reconciliation that eats margin.',
+        building:'Job-costing integration, approaching-OT alerts, and automated pay calculations stop cost overruns across service teams.',
+        banking:'Automated bonus and incentive pay, tax filing accuracy, and benefits cost tracking reduce administrative overhead.',
+        retail:'Real-time OT monitoring, shift-swap tools, and automated scheduling reduce unplanned overtime that spikes retail labor cost.',
+        fitness:'Instructor pay automation, session-based compensation, and OT alerts keep labor cost predictable across studio locations.',
+        carwash:'Automated shift management, OT alerts, and tip tracking keep per-location labor cost controlled at high-volume sites.',
+        lawenforcement:'FLSA overtime compliance, shift differential automation, and benefit cost tracking reduce compliance exposure unique to public safety payroll.',
+        default:'Real-time overtime alerts, automated scheduling, and connected payroll data stop cost leakage before it becomes a budget problem.',
+    },
+    saveTime: {
+        hospitality:'Automated onboarding, employee self-service for schedules and pay stubs, and single-system payroll eliminate the daily administrative grind.',
+        food:'New hire onboarding in one day, manager schedule tools, and direct employee access to pay information cut weekly admin burden dramatically.',
+        healthcare:'Automated credential tracking, benefits enrollment, and compliance filings eliminate coordination burden that pulls staff away from patient care.',
+        automotive:'Dealership onboarding automation, flat-rate pay calculations, and manager dashboards cut weekly admin load without adding staff.',
+        building:'Automated onboarding, mobile time tracking for field teams, and self-service pay access eliminate paperwork that slows service operations.',
+        banking:'Automated benefits administration, compliance reporting, and employee self-service reduce back-office burden on lean HR teams.',
+        retail:'Shift scheduling automation, onboarding workflows, and self-service pay stubs eliminate repetitive admin tasks across locations.',
+        fitness:'Automated instructor scheduling, class-based payroll, and onboarding tools give small teams their time back.',
+        carwash:'Express onboarding for high-turnover sites, automated payroll runs, and manager dashboards cut time spent on people admin.',
+        lawenforcement:'Automated FMLA tracking, shift scheduling, and digital onboarding reduce admin load on small HR teams managing complex schedules.',
+        default:'Automated workflows, employee self-service, and one-platform payroll eliminate manual coordination that consumes hours every week.',
+    },
+    driveEngagement: {
+        hospitality:'Recognition programs, anonymous pulse surveys, and performance coaching reduce voluntary exits — the #1 cost driver in hospitality.',
+        food:'Fast first paychecks, schedule flexibility tools, and peer recognition address the top reasons restaurant employees leave in the first 90 days.',
+        healthcare:'Career development tools, engagement surveys, and manager coaching create the stability that keeps skilled clinical staff from burning out.',
+        automotive:'Performance coaching, transparent pay tracking, and recognition programs keep top technicians and sales staff from walking to competitors.',
+        building:'Onboarding automation, recognition tools, and performance feedback reduce turnover in service roles where consistency impacts client relationships.',
+        banking:'Career pathing tools, continuous feedback, and employee recognition programs increase retention in competitive financial services talent markets.',
+        retail:'Flexible scheduling, recognition programs, and fast onboarding reduce early-tenure exits that cost retail operations the most.',
+        fitness:'Instructor recognition, engagement surveys, and performance feedback create the workplace culture that keeps top trainers on staff.',
+        carwash:'Recognition for top performers, fast first-paycheck delivery, and manager coaching reduce high turnover rates typical in car wash operations.',
+        lawenforcement:'Wellness check-ins, recognition programs, and career development tools support retention in high-stress public safety environments.',
+        default:'Recognition programs, pulse surveys, and performance tools give managers early warning signals before disengagement becomes a resignation.',
+    },
+    reduceRisk: {
+        hospitality:'Automated tax filing, tip-credit compliance, and ACA tracking eliminate audit triggers most common in high-turnover hospitality operations.',
+        food:'Tip pooling rules, FLSA tipped-wage compliance, and automated tax filing protect against regulatory exposure that catches growing restaurants off guard.',
+        healthcare:'ACA tracking, credential compliance, and automated FMLA/COBRA administration eliminate documentation gaps creating regulatory exposure in care settings.',
+        automotive:'Automated payroll tax filing, multi-state compliance, and flat-rate wage accuracy eliminate common audit triggers in dealership operations.',
+        building:'Prevailing wage compliance, multi-state tax filing, and automated I-9 verification reduce regulatory risk with distributed service teams.',
+        banking:'Automated compliance reporting, benefits audit trails, and tax accuracy reduce regulatory risk that regulators scrutinize in financial institutions.',
+        retail:'Multi-state tax compliance, ACA tracking, and automated audit trails eliminate compliance gaps that open up as retail scales across locations.',
+        fitness:'Contractor vs. employee classification, automated tax filing, and benefits compliance reduce risk exposure in fitness businesses with mixed workforces.',
+        carwash:'Automated payroll tax filing, tip reporting compliance, and ACA tracking reduce regulatory exposure in high-volume, high-turnover operations.',
+        lawenforcement:'FLSA overtime compliance, benefits audit trails, and automated reporting reduce legal exposure unique to public-sector payroll.',
+        default:'Automated tax filing, ACA tracking, and integrated compliance tools eliminate manual entry — the root cause of most payroll errors and regulatory exposure.',
+    },
+};
+
+const PILLAR_NETCHEX_PRODUCTS = {
+    saveDollars:     ['OneScreen Payroll', 'Time & Attendance', 'Scheduler', 'Tax Filing'],
+    saveTime:        ['Workflows', 'AskHR', 'Reporting & Analytics', 'Mobile ESS'],
+    driveEngagement: ['Recognition', 'Surveys', 'Performance', 'Learning'],
+    reduceRisk:      ['ACA Compliance', 'Benefits', 'Tax Filing', 'HR Documents'],
+};
+
+const MODULE_URLS = {
+    'Payroll':'https://netchex.com/blog/introducing-onescreen-payroll/',
+    'Time & Attendance':'https://netchex.com/solutions/time-attendance/',
+    'Scheduler':'https://netchex.com/employee-scheduling-software/',
+    'Workflows':'https://netchex.com/onboarding-software/',
+    'Benefits':'https://netchex.com/benefits/',
+    'Performance':'https://netchex.com/performance-management-software/',
+    'Surveys':'https://netchex.com/solutions/employee-engagement/',
+    'Learning':'https://netchex.com/solutions/learning-management/',
+    'Reporting':'https://netchex.com/solutions/reporting-analytics/',
+    'Recognition':'https://netchex.com/solutions/employee-engagement/',
+    'Recruit':'https://netchex.com/solutions/recruit/',
+    'HR':'https://netchex.com/solutions/human-resources/',
+    'AskHR':'https://netchex.com/askhr/',
+};
+
+/* ── STATE ── */
+let currentQ = 1;
+const TOTAL_Q = 22;
+let answers = {
+    prospectCompany:'', prospectContact:'', annualRevenue:'', currentVendor:'',
+    contractStatus:'', currentSpend:'', dealUrgency:'',
+    persona:null, industry:null, employeeCount:null, multiLocation:null,
+    payComplexity:null, overtimePercent:0, payrollErrors:null, adminHours:0,
+    turnoverRate:0, mobileAccess:null, reportTime:null, exitTracking:null,
+    recognitionProgram:null, ewaAccess:null, onboardingMethod:null, timeToFill:null,
+    complianceIssues:null, acaTracking:null, timekeeping:null, systemIntegration:null,
+    firstPaycheck:null, topProblemText:'', topProblemTags:[],
+};
+let scores = {}, dollars = {}, pdfData = {};
+
+/* ── SCREEN FLOW ── */
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active');
+        if (s.id === 'screen-results') s.style.display = '';
+    });
+    const el = document.getElementById(id);
+    el.classList.add('active');
+    if (id === 'screen-results') el.style.display = 'block';
+}
+
+function beginAssessment() {
+    const company = document.getElementById('ae-company').value.trim();
+    const contact = document.getElementById('ae-contact').value.trim();
+    const errEl   = document.getElementById('ae-discovery-error');
+    if (!company || !contact) { errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+    answers.prospectCompany = company;
+    answers.prospectContact = contact;
+    answers.annualRevenue   = document.getElementById('ae-revenue').value;
+    answers.currentVendor   = document.getElementById('ae-vendor').value;
+    answers.contractStatus  = document.getElementById('ae-contract').value;
+    answers.currentSpend    = document.getElementById('ae-spend').value.trim();
+    answers.dealUrgency     = document.getElementById('ae-urgency').value;
+    showScreen('screen-quiz');
+    showQuestion(1, { alignTop: true });
+}
+
+function showQuestion(n, options = {}) {
+    const { alignTop = false } = options;
+    document.querySelectorAll('.question-panel').forEach(p => p.classList.remove('active'));
+    const panelId = (typeof n === 'number') ? 'q' + n : n;
+    const panel = document.getElementById(panelId);
+    if (panel) {
+        panel.classList.add('active');
+        if (alignTop) {
+            const viewportTopOffset = 180;
+            const rect = panel.getBoundingClientRect();
+            const targetScrollY = window.scrollY + rect.top - viewportTopOffset;
+            if (Math.abs(rect.top - viewportTopOffset) >= 8) window.scrollTo({ top: Math.max(targetScrollY, 0), behavior: 'smooth' });
+        }
+    }
+    if (typeof n === 'number') {
+        const pct = ((n - 1) / TOTAL_Q) * 100;
+        document.getElementById('progress-fill').style.width = pct + '%';
+    }
+    currentQ = n;
+}
+
+function goNext() {
+    if (currentQ < TOTAL_Q) showQuestion(currentQ + 1, { alignTop: true });
+}
+
+function goBack() {
+    if (currentQ > 1) showQuestion(currentQ - 1);
+    else showScreen('screen-ae-discovery');
+}
+
+/* ── CHOICE CARDS ── */
+function selectChoice(el, field, value) {
+    el.closest('.choice-grid').querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    answers[field] = value;
+    if (field === 'industry') {
+        const d = INDUSTRY_DATA[value];
+        if (d) {
+            answers.overtimePercent = 0; setSlider('q6', 0);
+            answers.adminHours = 0;      setSlider('q8', 0);
+            answers.turnoverRate = 0;    setSlider('q9', 0);
+            ['q6','q8','q9'].forEach(qId => {
+                const nb = document.getElementById(qId + '-next');
+                if (nb) { nb.disabled = true; nb.style.opacity = '0.4'; nb.style.cursor = 'not-allowed'; }
+            });
+            const intEl = document.getElementById('q20-integrations');
+            if (intEl && INDUSTRY_INTEGRATIONS[value]) intEl.textContent = INDUSTRY_INTEGRATIONS[value];
+        }
+    }
+    setTimeout(() => {
+        if (typeof currentQ === 'number' && currentQ < TOTAL_Q) goNext();
+    }, 380);
+}
+
+/* ── SLIDERS (no IDK in AE mode) ── */
+function updateSlider(qId, field, val) {
+    val = parseInt(val);
+    answers[field] = val;
+    document.getElementById(qId + '-val').textContent = val;
+    const nextBtn = document.getElementById(qId + '-next');
+    if (val > 0) {
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = '1'; nextBtn.style.cursor = 'pointer'; }
+    } else {
+        if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = '0.4'; nextBtn.style.cursor = 'not-allowed'; }
+    }
+}
+
+function setSlider(qId, val) {
+    const slider  = document.getElementById(qId + '-slider');
+    const display = document.getElementById(qId + '-val');
+    if (slider)  slider.value = val;
+    if (display) display.textContent = val;
+}
+
+/* ── TAGS ── */
+function toggleTag(el, tag) {
+    el.classList.toggle('selected');
+    const idx = answers.topProblemTags.indexOf(tag);
+    if (idx === -1) answers.topProblemTags.push(tag);
+    else answers.topProblemTags.splice(idx, 1);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SCORING ENGINE — identical to quiz.html
+════════════════════════════════════════════════════════════════ */
+function calculateScores() {
+    const a = answers;
+    const ind = INDUSTRY_DATA[a.industry] || INDUSTRY_DATA.other;
+    const locationPenalty = { single:0, few:1, many:2 };
+    const payRisk         = { none:0, variable:1, tipped:2 };
+    const mobileMap       = { app:0, web:1, manager:2, paper:3 };
+    const exitMap         = { yes:0, sometimes:1, rarely:2, no:3 };
+    const paycheckMap     = { fast:0, week:1, twoweeks:2, slow:3 };
+    const locLvl          = locationPenalty[a.multiLocation] || 0;
+    const payLvl          = payRisk[a.payComplexity] || 0;
+    const paycheckLvl     = paycheckMap[a.firstPaycheck] || 2;
+    const errorMap        = { rarely:0, occasional:8, monthly:18, often:30 };
+    const errorPenalty    = errorMap[a.payrollErrors] || 0;
+    const reportMap       = { fast:0, hours:6, halfday:14, fullday:22 };
+    const reportPenalty   = reportMap[a.reportTime] || 0;
+    const recognitionMap  = { formal:0, informal:12, none:24 };
+    const recognitionPenalty = recognitionMap[a.recognitionProgram] || 0;
+    const ewaPenalty      = a.ewaAccess === 'yes' ? 0 : a.ewaAccess === 'no' ? 10 : 5;
+    const onboardingMap   = { digital:0, partial:8, paper:18 };
+    const onboardingPenalty = onboardingMap[a.onboardingMethod] || 0;
+    const fillMap         = { fast:0, month:5, twomonths:12, slow:20 };
+    const fillPenalty     = fillMap[a.timeToFill] || 0;
+    const acaMap          = { automated:0, partial:14, manual:28 };
+    const acaPenalty      = acaMap[a.acaTracking] || 0;
+    const timekeepingMap  = { biometric:0, app:5, manager:14, paper:22 };
+    const timekeepingPenalty = timekeepingMap[a.timekeeping] || 0;
+
+    // Save Dollars
+    let d = 100;
+    if (a.overtimePercent > 8) d -= Math.min(26, (a.overtimePercent - 8) * 1.6);
+    const compMapD = { none:0, '1-2':14, '3plus':28, financial:46 };
+    d -= (compMapD[a.complianceIssues] || 0);
+    const intMapD = { fully:0, partially:10, manual:22 };
+    d -= (intMapD[a.systemIntegration] || 0);
+    d -= payLvl * 5;
+    d -= paycheckLvl * 4;
+    d -= locLvl * 4;
+    d -= errorPenalty * 0.4 - timekeepingPenalty * 0.5;
+    d = Math.max(10, Math.round(d));
+
+    // Save Time
+    let t = 100;
+    if (a.adminHours > 6) t -= Math.min(36, (a.adminHours - 6) * 1.35);
+    const mobTimeMap = { app:0, web:7, manager:19, paper:27 };
+    t -= (mobTimeMap[a.mobileAccess] || 0);
+    const intMapT = { fully:0, partially:13, manual:30 };
+    t -= (intMapT[a.systemIntegration] || 0);
+    t -= locLvl * 5;
+    t -= reportPenalty * 0.8 - onboardingPenalty * 0.6;
+    t = Math.max(10, Math.round(t));
+
+    // Drive Engagement
+    let e = 100;
+    const turnRatio = a.turnoverRate / (ind.turnover || 45);
+    if (turnRatio > 1) e -= Math.min(30, (turnRatio - 1) * 30);
+    const exitEngMap = { yes:0, sometimes:13, rarely:26, no:40 };
+    e -= (exitEngMap[a.exitTracking] || 0);
+    const mobEngMap = { app:0, web:5, manager:13, paper:19 };
+    e -= (mobEngMap[a.mobileAccess] || 0);
+    e -= paycheckLvl * 4;
+    e -= recognitionPenalty * 0.7 - ewaPenalty * 0.6 - fillPenalty * 0.5;
+    e = Math.max(10, Math.round(e));
+
+    // Reduce Risk
+    let r = 100;
+    const riskCompMap = { none:0, '1-2':22, '3plus':46, financial:66 };
+    r -= (riskCompMap[a.complianceIssues] || 0);
+    const intMapR = { fully:0, partially:13, manual:28 };
+    r -= (intMapR[a.systemIntegration] || 0);
+    const exitRiskMap = { yes:0, sometimes:5, rarely:10, no:15 };
+    r -= (exitRiskMap[a.exitTracking] || 0);
+    r -= payLvl * 7;
+    r -= paycheckLvl * 4;
+    r -= locLvl * 4;
+    r -= acaPenalty * 0.9 - timekeepingPenalty * 0.5 - errorPenalty * 0.3;
+    r = Math.max(10, Math.round(r));
+
+    const saveDollars     = Math.round(d * 0.25);
+    const saveTime        = Math.round(t * 0.25);
+    const driveEngagement = Math.round(e * 0.25);
+    const reduceRisk      = Math.round(r * 0.25);
+    const composite       = saveDollars + saveTime + driveEngagement + reduceRisk;
+    return { saveDollars, saveTime, driveEngagement, reduceRisk, composite, rawD:d, rawT:t, rawE:e, rawR:r };
+}
+
+/* ════════════════════════════════════════════════════════════════
+   DOLLAR CALCULATIONS — identical to quiz.html
+════════════════════════════════════════════════════════════════ */
+function calculateDollars() {
+    const a = answers;
+    const ind = INDUSTRY_DATA[a.industry] || INDUSTRY_DATA.other;
+    const numEmp = EMP_MIDPOINTS[a.employeeCount] || 75;
+    const wage = ind.hourlyWage;
+    const annualWage = wage * 2080;
+
+    const otThreshold = 8;
+    const otExcess = Math.max(0, a.overtimePercent - otThreshold) / 100;
+    const otOpportunity = Math.round(numEmp * otExcess * 2080 * (wage * 0.5) * 0.40);
+
+    const hrHourlyRate = 31.25;
+    const excessHours = Math.max(0, a.adminHours - 6);
+    const locationMult = { single:1.0, few:1.28, many:1.55 };
+    const locFactor = locationMult[a.multiLocation] || 1.0;
+    const adminOpportunity = Math.round(excessHours * 52 * hrHourlyRate * 0.57 * locFactor);
+
+    const replaceCost = annualWage * 0.80;
+    const paycheckMult = { fast:1.0, week:1.08, twoweeks:1.18, slow:1.30 };
+    const paycheckFactor = paycheckMult[a.firstPaycheck] || 1.0;
+    const annualTurnoverEmp = numEmp * (a.turnoverRate / 100);
+    const turnoverOpportunity = Math.round(annualTurnoverEmp * replaceCost * 0.25 * paycheckFactor);
+
+    const compCostMap = { none:0, '1-2':16500, '3plus':45000, financial:80000 };
+    const payComplexityAdder = { none:0, variable:4500, tipped:9000 };
+    const compOpportunity = (compCostMap[a.complianceIssues] || 0) + (payComplexityAdder[a.payComplexity] || 0);
+
+    const errorFreqMap = { rarely:0, occasional:1.5, monthly:12, often:24 };
+    const errorsPerYear = errorFreqMap[a.payrollErrors] || 0;
+    const payrollErrorCost = Math.round(errorsPerYear * numEmp * 0.08 * 310);
+
+    const reportHrsMap = { fast:0, hours:1.5, halfday:4, fullday:8 };
+    const reportHrsPerWeek = reportHrsMap[a.reportTime] || 0;
+    const reportOverheadCost = Math.round(reportHrsPerWeek * 52 * 31.25);
+
+    const noRecognitionMultiplier = a.recognitionProgram === 'formal' ? 0 : a.recognitionProgram === 'informal' ? 0.15 : 0.35;
+    const recognitionTurnoverCost = Math.round(numEmp * (ind.turnover / 100) * noRecognitionMultiplier * ind.hourlyWage * 2080 * 0.33);
+
+    const ewaGapCost = a.ewaAccess === 'yes' ? 0 : Math.round(numEmp * (ind.turnover / 100) * 0.15 * ind.hourlyWage * 2080 * 0.33);
+
+    const onboardingHrDelta = a.onboardingMethod === 'digital' ? 0 : a.onboardingMethod === 'partial' ? 2 : 4;
+    const annualHires = Math.round(numEmp * (ind.turnover / 100));
+    const onboardingTimeCost = Math.round(onboardingHrDelta * annualHires * 31.25);
+
+    const fillWeeksMap = { fast:1, month:3, twomonths:6, slow:10 };
+    const extraFillWeeks = Math.max(0, (fillWeeksMap[a.timeToFill] || 2) - 1);
+    const openRolesAvg = Math.max(1, Math.round(numEmp * (ind.turnover / 100) / 12));
+    const openRoleCost = Math.round(extraFillWeeks * openRolesAvg * ind.hourlyWage * 40);
+
+    const acaExposure = a.acaTracking === 'automated' ? 0 : a.acaTracking === 'partial' ? Math.round(numEmp * 0.05 * 2970) : Math.round(numEmp * 0.12 * 2970);
+
+    const timeFraudCost = a.timekeeping === 'paper' ? Math.round(numEmp * ind.hourlyWage * 2080 * 0.045) :
+                          a.timekeeping === 'manager' ? Math.round(numEmp * ind.hourlyWage * 2080 * 0.02) : 0;
+
+    const total = otOpportunity + adminOpportunity + turnoverOpportunity + compOpportunity
+                + payrollErrorCost + reportOverheadCost + recognitionTurnoverCost + ewaGapCost
+                + onboardingTimeCost + openRoleCost + acaExposure + timeFraudCost;
+    return { otOpportunity, adminOpportunity, turnoverOpportunity, compOpportunity, payrollErrorCost,
+             reportOverheadCost, recognitionTurnoverCost, ewaGapCost, onboardingTimeCost,
+             openRoleCost, acaExposure, timeFraudCost, total };
+}
+
+/* ════════════════════════════════════════════════════════════════
+   INVESTMENT SECTION
+════════════════════════════════════════════════════════════════ */
+function buildInvestmentSection(sc, dl) {
+    const empCount = EMP_MIDPOINTS[answers.employeeCount] || 75;
+    const adjustedCost = empCount < 100 ? 45000 : empCount < 250 ? 75000 : empCount < 500 ? 120000 : 200000;
+    const roiConservative = Math.round(dl.total * 0.40);
+    const roiExpected     = Math.round(dl.total * 0.65);
+    const roiOptimistic   = Math.round(dl.total * 0.85);
+    const currentSpendNum = parseFloat((answers.currentSpend || '').replace(/[^0-9.]/g, '')) || 0;
+    const delta = adjustedCost - currentSpendNum;
+    const deltaColor = delta <= 0 ? '#16a34a' : '#dc2626';
+    const deltaSign  = delta <= 0 ? '' : '+';
+
+    // Spend comparison
+    const spendComp = document.getElementById('spend-comparison');
+    const spendPlaceholder = document.getElementById('spend-placeholder');
+    if (currentSpendNum > 0) {
+        document.getElementById('spend-current').textContent  = fmt(currentSpendNum);
+        document.getElementById('spend-netchex').textContent  = fmt(adjustedCost);
+        const deltaEl = document.getElementById('spend-delta');
+        deltaEl.textContent  = deltaSign + fmt(Math.abs(delta));
+        deltaEl.style.color  = deltaColor;
+        if (spendComp) spendComp.style.display = 'block';
+        if (spendPlaceholder) spendPlaceholder.style.display = 'none';
+    } else {
+        if (spendComp) spendComp.style.display = 'none';
+        if (spendPlaceholder) spendPlaceholder.style.display = 'block';
+    }
+
+    document.getElementById('investment-amount').textContent = '~' + fmt(adjustedCost);
+
+    // ROI scenarios
+    const scenariosEl = document.getElementById('roi-scenarios');
+    if (scenariosEl) {
+        scenariosEl.innerHTML = [
+            { label:'Conservative (40%)', val: roiConservative, color:'#64748b' },
+            { label:'Expected (65%)',     val: roiExpected,     color:'#1a8c4e' },
+            { label:'Optimistic (85%)',   val: roiOptimistic,   color:'#059669' },
+        ].map(s =>
+            `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:13px;color:#374151;">${s.label}</span>
+                <span style="font-size:15px;font-weight:700;color:${s.color};">${fmt(s.val)}/yr</span>
+            </div>`
+        ).join('');
+    }
+
+    // ROI multiple
+    if (dl.total > 0) {
+        const roiMult = Math.round(roiExpected / adjustedCost);
+        document.getElementById('roi-multiple').textContent = roiMult + 'x';
+        const daysPayback = Math.round((adjustedCost / roiExpected) * 365);
+        document.getElementById('payback-period').textContent = '~' + daysPayback + ' days';
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   NARRATIVE — same logic as quiz.html
+════════════════════════════════════════════════════════════════ */
+function buildNarrative(sc, dl) {
+    const a = answers;
+    const ind = INDUSTRY_DATA[a.industry] || INDUSTRY_DATA.other;
+    const numEmp = EMP_MIDPOINTS[a.employeeCount] || 60;
+    const pillars = [
+        { key:'saveDollars', score:sc.saveDollars, name:'Save Dollars' },
+        { key:'saveTime',    score:sc.saveTime,    name:'Save Time' },
+        { key:'driveEngagement', score:sc.driveEngagement, name:'Drive Engagement' },
+        { key:'reduceRisk',  score:sc.reduceRisk,  name:'Reduce Risk' },
+    ];
+    const sorted  = [...pillars].sort((a,b) => a.score - b.score);
+    const weakest = sorted[0];
+    const company = a.prospectCompany || 'this company';
+    const personaOpeners = {
+        cfo: `Based on discovery inputs, <strong>${company}</strong> is operating at roughly <strong>${sc.composite}%</strong> of its potential HR efficiency. They're carrying an estimated <strong>${fmt(dl.total)}</strong> in avoidable annual costs across payroll, overtime, compliance, and turnover.`,
+        hr:  `<strong>${company}</strong>'s HR setup is managing <strong>${numEmp} employees</strong> but leaving real value on the table. Their team spends an estimated <strong>${a.adminHours} hours/week</strong> on admin. Best-in-class teams handle this in under 6 hours. That's time that could go back to developing people and reducing turnover.`,
+        ops: `Day-to-day operations at <strong>${company}</strong> are carrying more manual burden than necessary. Between data re-entry, payroll processing, and employee questions, the team is spending time each week on tasks a connected platform handles automatically. Their biggest immediate opportunity is in the <strong>${weakest.name}</strong> pillar.`,
+        owner: `<strong>${company}</strong>'s HR and payroll setup is carrying <strong>${fmt(dl.total)} in measurable risk and avoidable cost</strong> per year. For a business of this size, this isn't a back-office problem — it's a margin problem and a growth bottleneck.`,
+    };
+    const opener = personaOpeners[a.persona] || personaOpeners.hr;
+    let oppPara = '';
+    if (weakest.key === 'saveDollars') {
+        oppPara = `Their biggest opportunity is in <strong>cost recovery</strong>. ${a.overtimePercent > 8 ? `An overtime rate of ${a.overtimePercent}% is above the industry target of 8% — approaching-OT alerts and real-time scheduling visibility can reduce this meaningfully. ` : ''}${a.complianceIssues !== 'none' ? 'Compliance exposure is the highest-risk cost category — automated tax filing and ACA tracking eliminates this almost entirely. ' : ''}With Netchex, teams in ${ind.name} typically recover ${fmt(dl.otOpportunity + dl.compOpportunity)} annually in this pillar alone.`;
+    } else if (weakest.key === 'saveTime') {
+        oppPara = `Their biggest opportunity is in <strong>time recovery</strong>. At ${a.adminHours} hours/week on admin, their team is spending ${a.adminHours - 6} hours more per week than best-in-class. Netchex's automated workflows typically eliminate an estimated 57% of that burden, starting in the first 30 days.`;
+    } else if (weakest.key === 'driveEngagement') {
+        oppPara = `Their biggest opportunity is in <strong>engagement and retention</strong>. At a ${a.turnoverRate}% annual turnover rate${a.turnoverRate > ind.turnover ? ` (above the ${ind.name} average of ${ind.turnover}%)` : ''}, each departure costs an estimated ${fmt(ind.hourlyWage * 2080 * 0.80)} to replace. Netchex customers in this industry reduce turnover by 20–40% in year one.`;
+    } else {
+        oppPara = `Their biggest opportunity is in <strong>risk reduction</strong>. ${a.complianceIssues !== 'none' ? 'Compliance exposure is the most pressing issue — even 1-2 payroll tax notices or ACA filing errors can cost $8,000–$25,000 each to resolve. ' : ''}A fully integrated platform eliminates the root causes rather than patching them.`;
+    }
+    return `<h3>What this means for ${company}.</h3><p>${opener}</p><p>${oppPara}</p><p>All of this is recoverable. Netchex connects payroll, time, benefits, performance, and engagement in a single platform, so improvements in one area compound across the others. The average Netchex customer stays 10+ years because the results hold.</p>`;
+}
+
+/* ── MODULE RECOMMENDATIONS ── */
+function buildModuleRecommendations(sc) {
+    const a = answers;
+    const allModules = [
+        { name:'Payroll',          desc:'Eliminate manual re-entry, reduce errors by 46%, run payroll in 15 min. Handles tipped wages, piece-rate, and multi-location pay.', pillarKey:'saveDollars', score:sc.saveDollars, triggers:['Payroll errors','Manual data re-entry','Tipped wage complexity'] },
+        { name:'Time & Attendance',desc:'Stop buddy punching, catch OT before it happens, create audit-ready records.', pillarKey:'saveDollars', score:sc.saveDollars, triggers:['OT overages','Compliance surprises'] },
+        { name:'Scheduler',        desc:'Save 3–5 hrs/manager/week. Reduce no-shows 67%. Eliminate scheduling conflicts and callout chaos.', pillarKey:'saveTime', score:sc.saveTime, triggers:['OT overages','Scheduling & callouts','Multi-location visibility'] },
+        { name:'Workflows',        desc:'Automate onboarding from 3 weeks to 1 day. Eliminate 55% of manager task burden.', pillarKey:'saveTime', score:sc.saveTime, triggers:['Slow onboarding','Employee questions','Slow first paycheck'] },
+        { name:'Benefits',         desc:'50% faster open enrollment. 65% compliance risk eliminated. 89% of employees report less financial stress.', pillarKey:'reduceRisk', score:sc.reduceRisk, triggers:['Open enrollment chaos','Benefits confusion','Compliance surprises'] },
+        { name:'Performance',      desc:'91% retention with continuous feedback. 21% higher profitability from engaged teams.', pillarKey:'driveEngagement', score:sc.driveEngagement, triggers:['High turnover'] },
+        { name:'Surveys',          desc:'4× more feedback through anonymous channels. Catch disengagement before it becomes a resignation.', pillarKey:'driveEngagement', score:sc.driveEngagement, triggers:['High turnover','Employee questions'] },
+        { name:'Learning',         desc:'94% more predictive retention. $2,342 saved per hire in turnover costs. 2,000+ mobile courses.', pillarKey:'driveEngagement', score:sc.driveEngagement, triggers:['High turnover','Slow onboarding'] },
+        { name:'Reporting',        desc:'62% of HR leaders say analytics gaps hurt decisions. See everything across every location in one dashboard.', pillarKey:'saveTime', score:sc.saveTime, triggers:['Report building','Multi-location visibility'] },
+        { name:'Recognition',      desc:'2× lower voluntary turnover. 20–40% overall turnover reduction. 21% higher profitability.', pillarKey:'driveEngagement', score:sc.driveEngagement, triggers:['High turnover'] },
+        { name:'Recruit',          desc:'Hire faster with structured pipelines, offer letters, and background checks — all in one place. Cut time-to-hire by up to 60%.', pillarKey:'saveTime', score:sc.saveTime, triggers:['Slow onboarding','High turnover'] },
+    ];
+    const tags = a.topProblemTags;
+    const scored = allModules.map(m => {
+        let tagMatch = tags.length === 0;
+        if (!tagMatch) { for (let t of m.triggers) { if (tags.indexOf(t) !== -1) { tagMatch = true; break; } } }
+        const pillarWeak = m.score < 18;
+        let priority = 'med';
+        if (pillarWeak && tagMatch) priority = 'high';
+        return { ...m, priority };
+    });
+    scored.sort((a, b) => {
+        if (a.priority === 'high' && b.priority !== 'high') return -1;
+        if (b.priority === 'high' && a.priority !== 'high') return 1;
+        return a.score - b.score;
+    });
+    const top6 = scored.slice(0, 6);
+    top6.forEach((m, i) => { if (i >= 2) m.priority = 'med'; });
+    return top6;
+}
+
+/* ── PILLAR DESCRIPTIONS ── */
+function pillarDesc(key, score, sc) {
+    const a = answers;
+    const ind = INDUSTRY_DATA[a.industry] || INDUSTRY_DATA.other;
+    const descs = {
+        saveDollars: score >= 20 ? 'Strong cost control. Overtime and compliance exposure are well-managed.' :
+                     score >= 15 ? `Room to improve: ${a.overtimePercent > 8 ? `OT at ${a.overtimePercent}% is above target. ` : ''}${a.complianceIssues !== 'none' ? 'Compliance notices signal process gaps. ' : ''}Tightening these recovers real dollars.` :
+                     `Significant cost leakage: ${a.overtimePercent > 10 ? `${a.overtimePercent}% overtime rate, ` : ''}${a.complianceIssues !== 'none' ? 'compliance issues, ' : ''}${a.systemIntegration === 'manual' ? 'manual re-entry errors. ' : ''}Highest ROI potential here.`,
+        saveTime:    score >= 20 ? 'Their team is operating efficiently. Admin burden is well within best-in-class range.' :
+                     score >= 15 ? `Their team spends ${a.adminHours} hrs/week on admin — ${a.adminHours - 6} hrs above best-in-class${a.mobileAccess === 'manager' || a.mobileAccess === 'paper' ? ', and employees contacting managers directly are adding to that load' : ''}. Automation recovers this quickly.` :
+                     `At ${a.adminHours} hrs/week on admin${a.systemIntegration === 'manual' ? ' with significant manual re-entry' : ''}${a.mobileAccess === 'manager' || a.mobileAccess === 'paper' ? ' and no employee self-service' : ''}, the team is carrying a heavy burden. Fastest win available.`,
+        driveEngagement: score >= 20 ? 'Strong engagement and retention signals. Ahead of most peers.' :
+                         score >= 15 ? `Turnover at ${a.turnoverRate}% and ${a.exitTracking === 'no' || a.exitTracking === 'rarely' ? 'no clear picture of why people leave' : 'inconsistent exit tracking'} leave retention gains on the table.` :
+                         `At ${a.turnoverRate}% annual turnover — ${a.turnoverRate > ind.turnover ? `${Math.round(a.turnoverRate - ind.turnover)} points above ${ind.name} average` : 'a significant cost center'} — engagement tools have immediate, measurable ROI.`,
+        reduceRisk:  score >= 20 ? 'Low risk profile. Systems and compliance record are solid.' :
+                     score >= 15 ? `${a.complianceIssues !== 'none' ? 'Prior compliance issues signal process exposure. ' : ''}${a.systemIntegration !== 'fully' ? 'Partial integration creates data risk. ' : ''}Risk reduction is achievable quickly.` :
+                     `${a.complianceIssues === '3plus' || a.complianceIssues === 'financial' ? 'Multiple compliance incidents and ' : ''}${a.systemIntegration === 'manual' ? 'heavy manual re-entry create' : 'process gaps create'} material risk exposure. Priority one.`,
+    };
+    return descs[key] || '';
+}
+
+/* ── PILLAR GAP SECTION (AE-only: netchex products + potential impact) ── */
+function buildPillarGapSection(key, score, pillarDollar) {
+    const ind = INDUSTRY_DATA[answers.industry] || INDUSTRY_DATA.other;
+    const industryKey = answers.industry || 'other';
+    const howText = (PILLAR_HOW[key] && (PILLAR_HOW[key][industryKey] || PILLAR_HOW[key].default)) || '';
+    const products = PILLAR_NETCHEX_PRODUCTS[key] || [];
+    const impactDollar = Math.round(pillarDollar * 0.7); // 70% midpoint of 60-80% range
+
+    if (score >= 20) {
+        return `<div class="netchex-strong-section"><div class="gap-title">Strong Pillar — Positive Position</div>
+            <p style="font-size:12px;color:#065f46;line-height:1.55;margin:0;">${howText} Maintaining this advantage should be part of the renewal/retention conversation.</p></div>`;
+    }
+    return `<div class="netchex-gap-section"><div class="gap-title">How Netchex Closes This Gap</div>
+        <p style="font-size:12px;color:#1e3a8a;line-height:1.55;margin-bottom:8px;">${howText}</p>
+        <div style="margin-bottom:8px;">${products.map(p => `<span class="netchex-product-pill">${p}</span>`).join('')}</div>
+        ${impactDollar > 0 ? `<div style="font-size:11px;font-weight:600;color:#1d4ed8;">Potential impact: ${fmt(impactDollar)}–${fmt(Math.round(pillarDollar * 0.8))}/yr</div>` : ''}
+    </div>`;
+}
+
+/* ── UTILITIES ── */
+function fmt(n) {
+    if (n === 0) return '$0';
+    if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return '$' + Math.round(n / 1000) + 'K';
+    return '$' + n.toLocaleString();
+}
+function setEl(id, val) { const e = document.getElementById(id); if (e) e.textContent = val; }
+function setHtml(id, val) { const e = document.getElementById(id); if (e) e.innerHTML = val; }
+
+/* ════════════════════════════════════════════════════════════════
+   GENERATE / RENDER
+════════════════════════════════════════════════════════════════ */
+function generateReport() {
+    if (!answers.industry)          answers.industry          = 'other';
+    if (!answers.employeeCount)     answers.employeeCount     = '51-100';
+    if (!answers.multiLocation)     answers.multiLocation     = 'single';
+    if (!answers.payComplexity)     answers.payComplexity     = 'none';
+    if (!answers.mobileAccess)      answers.mobileAccess      = 'web';
+    if (!answers.exitTracking)      answers.exitTracking      = 'sometimes';
+    if (!answers.complianceIssues)  answers.complianceIssues  = 'none';
+    if (!answers.systemIntegration) answers.systemIntegration = 'partially';
+    if (!answers.firstPaycheck)     answers.firstPaycheck     = 'twoweeks';
+    if (!answers.payrollErrors)     answers.payrollErrors     = 'occasional';
+    if (!answers.reportTime)        answers.reportTime        = 'hours';
+    if (!answers.recognitionProgram) answers.recognitionProgram = 'informal';
+    if (!answers.ewaAccess)         answers.ewaAccess         = 'no';
+    if (!answers.onboardingMethod)  answers.onboardingMethod  = 'partial';
+    if (!answers.timeToFill)        answers.timeToFill        = 'month';
+    if (!answers.acaTracking)       answers.acaTracking       = 'partial';
+    if (!answers.timekeeping)       answers.timekeeping       = 'manager';
+    if (answers.overtimePercent === 0) { const ind = INDUSTRY_DATA[answers.industry] || INDUSTRY_DATA.other; answers.overtimePercent = ind.overtime; }
+    if (answers.adminHours === 0)      { const ind = INDUSTRY_DATA[answers.industry] || INDUSTRY_DATA.other; answers.adminHours = ind.adminHours; }
+    if (answers.turnoverRate === 0)    { const ind = INDUSTRY_DATA[answers.industry] || INDUSTRY_DATA.other; answers.turnoverRate = ind.turnover; }
+
+    showScreen('screen-loading');
+    const steps = ['step1','step2','step3','step4'];
+    let i = 0;
+    const interval = setInterval(() => {
+        if (i > 0) { document.getElementById(steps[i-1]).classList.remove('active'); document.getElementById(steps[i-1]).classList.add('done'); }
+        if (i < steps.length) { document.getElementById(steps[i]).classList.add('active'); i++; }
+        else { clearInterval(interval); setTimeout(renderResults, 600); }
+    }, 700);
+}
+
+function renderResults() {
+    scores  = calculateScores();
+    dollars = calculateDollars();
+    const ind         = INDUSTRY_DATA[answers.industry] || INDUSTRY_DATA.other;
+    const netchexPct  = ind.netchexAvg || Math.round(ind.indexAvg * 1.25);
+    const baselinePct = ind.indexAvg;
+    const youPct      = scores.composite;
+    const gap         = netchexPct - youPct;
+    const industryKey = answers.industry || 'other';
+
+    showScreen('screen-results');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    // Hero prospect info
+    setEl('hero-prospect-name',    answers.prospectCompany || '—');
+    setEl('hero-prospect-contact', answers.prospectContact ? ('Contact: ' + answers.prospectContact) : '');
+    setEl('cta-prospect-name',     answers.prospectCompany || 'this prospect');
+
+    // Score display (animated)
+    setTimeout(() => {
+        const scoreEl = document.getElementById('score-display');
+        const start = Date.now();
+        const tick = () => {
+            const prog = Math.min((Date.now() - start) / 1200, 1);
+            const eased = 1 - Math.pow(1 - prog, 3);
+            scoreEl.textContent = Math.round(eased * youPct);
+            if (prog < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+    }, 300);
+    setEl('score-netchex-hero', netchexPct + '+');
+    setEl('savings-display', fmt(dollars.total));
+    setEl('results-company-meta', ind.name + ' · ' + (EMP_MIDPOINTS[answers.employeeCount] || 75) + ' employees');
+
+    // Grade badge
+    const gradeEl = document.getElementById('score-grade');
+    if (scores.composite >= netchexPct) {
+        gradeEl.textContent = '✓ Above Netchex Benchmark'; gradeEl.className = 'score-grade high';
+    } else if (scores.composite >= ind.indexAvg) {
+        gradeEl.textContent = '⚡ Room to Improve';        gradeEl.className = 'score-grade mid';
+    } else {
+        gradeEl.textContent = '⚠ Significant Gaps';       gradeEl.className = 'score-grade low';
+    }
+
+    // Benchmark bar
+    setTimeout(() => {
+        const bmYouBar = document.getElementById('bm-you-bar');
+        const bmMarker = document.getElementById('bm-marker');
+        const bmBaseline = document.getElementById('bm-baseline-marker');
+        const bmNetchex  = document.getElementById('bm-netchex-marker');
+        if (bmYouBar) bmYouBar.style.width = youPct + '%';
+        if (bmMarker) bmMarker.style.left = youPct + '%';
+        if (bmBaseline) bmBaseline.style.left = baselinePct + '%';
+        if (bmNetchex)  bmNetchex.style.left  = netchexPct  + '%';
+    }, 600);
+    setEl('bm-val-you', youPct);
+    setEl('bm-val-baseline', baselinePct);
+    setEl('bm-val-netchex', netchexPct);
+
+    // At-benchmark callout
+    const bmData = AT_BENCHMARK[answers.industry] || AT_BENCHMARK.other;
+    const indEmoji = { hospitality:'🏨', food:'🍽️', healthcare:'🏥', automotive:'🚗', building:'🏗️', banking:'🏦', education:'🎓', retail:'🛍️', fitness:'💪', carwash:'🚿', lawenforcement:'🚔', other:'📊' };
+    const emoji = indEmoji[answers.industry] || '📊';
+    const calloutEl = document.getElementById('at-benchmark-callout');
+    if (calloutEl) {
+        if (gap > 0) {
+            calloutEl.innerHTML = `${emoji} <strong style="color:#6EE7B7;">${ind.name} companies on Netchex average ${netchexPct}/100.</strong> Closing that ${gap}-point gap typically means ${fmt(Math.round(dollars.total * 0.55))}–${fmt(dollars.total)} in annual savings.`;
+        } else {
+            calloutEl.innerHTML = `${emoji} <strong style="color:#6EE7B7;">Already at or above the Netchex ${ind.name} benchmark (${netchexPct}/100).</strong> Position this as validation and retention language.`;
+        }
+    }
+
+    // Stat pills
+    const pillsEl = document.getElementById('results-stat-pills');
+    if (pillsEl) {
+        const pills = [
+            { label:'Readiness Score', val: youPct + ' / 100' },
+            { label:'Annual Opp.',     val: fmt(dollars.total) },
+            { label:'Industry Avg',    val: baselinePct + ' / 100' },
+            { label:'Netchex Avg',     val: netchexPct + ' / 100' },
+            ...(answers.dealUrgency ? [{ label:'Deal Urgency', val: answers.dealUrgency.split('—')[0].trim() }] : []),
+        ];
+        pillsEl.innerHTML = pills.map(p =>
+            `<div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:7px 14px;text-align:center;">
+                <div style="font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:2px;">${p.label}</div>
+                <div style="font-size:14px;font-weight:700;color:#fff;">${p.val}</div>
+            </div>`
+        ).join('');
+    }
+
+    // Score transformation card
+    setEl('transform-score-today',   youPct + '');
+    setEl('transform-score-netchex', netchexPct + '+');
+    setEl('transform-gap-val',       Math.max(0, gap) + '');
+    setEl('transform-bar-label-current', youPct + '/100');
+    setEl('transform-bar-label-netchex', netchexPct + '/100');
+    const recText = gap > 0
+        ? `${gap} points recoverable with Netchex. This puts them at the ${ind.name} customer average — where teams typically see ${bmData.time} saved in HR admin and turnover reduced to ${bmData.turnover}.`
+        : `They are at or above the Netchex ${ind.name} customer benchmark. Use this as a retention and confidence message.`;
+    setEl('transform-recovery-text', recText);
+    setTimeout(() => {
+        const barCurr = document.getElementById('transform-bar-current');
+        const barNtx  = document.getElementById('transform-bar-netchex');
+        if (barCurr) barCurr.style.width = youPct + '%';
+        if (barNtx)  barNtx.style.width  = netchexPct + '%';
+    }, 700);
+
+    // Pillar cards
+    const pillarDollarMap = {
+        saveDollars:     dollars.otOpportunity,
+        saveTime:        dollars.adminOpportunity,
+        driveEngagement: dollars.turnoverOpportunity,
+        reduceRisk:      dollars.compOpportunity,
+    };
+    const pillarData = [
+        { id:'p-dollars',    barId:'p-dollars-bar',    score:scores.saveDollars,     key:'saveDollars' },
+        { id:'p-time',       barId:'p-time-bar',       score:scores.saveTime,        key:'saveTime' },
+        { id:'p-engagement', barId:'p-engagement-bar', score:scores.driveEngagement, key:'driveEngagement' },
+        { id:'p-risk',       barId:'p-risk-bar',       score:scores.reduceRisk,      key:'reduceRisk' },
+    ];
+    const pillarDescs = {};
+    pillarData.forEach(p => {
+        setEl(p.id, p.score);
+        const desc = pillarDesc(p.key, p.score, scores);
+        pillarDescs[p.key] = desc;
+        setEl(p.id + '-desc', desc);
+        setTimeout(() => { const b = document.getElementById(p.barId); if (b) b.style.width = (p.score / 25 * 100) + '%'; }, 700);
+        // Gap section
+        const oppDollar = pillarDollarMap[p.key] || 0;
+        setHtml(p.id + '-gap-section', buildPillarGapSection(p.key, p.score, oppDollar));
+    });
+
+    // Cost labels + math pills
+    const numEmpV2 = EMP_MIDPOINTS[answers.employeeCount] || 75;
+    setEl('p-engagement-cost-label', dollars.turnoverOpportunity > 0 ? fmt(dollars.turnoverOpportunity) + '/yr' : 'Cost gap detected');
+    setEl('p-dollars-cost-label',    dollars.otOpportunity > 0      ? fmt(dollars.otOpportunity) + '/yr'      : 'Cost gap detected');
+    setEl('p-risk-cost-label',       dollars.compOpportunity > 0    ? fmt(dollars.compOpportunity) + '/yr'    : 'Cost gap detected');
+    setEl('p-time-cost-label',       dollars.adminOpportunity > 0   ? fmt(dollars.adminOpportunity) + '/yr'   : 'Cost gap detected');
+    setEl('p-engagement-math', `${Math.round(numEmpV2 * (answers.turnoverRate/100))} exits/yr × ${fmt(ind.hourlyWage * 2080 * 0.80)} per exit = ${fmt(dollars.turnoverOpportunity)}`);
+    setEl('p-dollars-math',    `${answers.overtimePercent}% OT × ${numEmpV2} employees × $${ind.hourlyWage}/hr = ${fmt(dollars.otOpportunity)}`);
+    setEl('p-risk-math',       answers.complianceIssues !== 'none' ? `Compliance issues flagged — est. ${fmt(dollars.compOpportunity)} risk exposure` : 'No compliance issues flagged');
+    setEl('p-time-math',       `${answers.adminHours} hrs/wk − 6 best-in-class = ${answers.adminHours - 6} excess hrs × 52 × $31.25/hr = ${fmt(dollars.adminOpportunity)}`);
+    const howText = (k) => (PILLAR_HOW[k] && (PILLAR_HOW[k][industryKey] || PILLAR_HOW[k].default)) || '';
+    setEl('p-engagement-cost-body', howText('driveEngagement'));
+    setEl('p-dollars-cost-body',    howText('saveDollars'));
+    setEl('p-risk-cost-body',       howText('reduceRisk'));
+    setEl('p-time-cost-body',       howText('saveTime'));
+
+    // Module recommendations
+    const modules = buildModuleRecommendations(scores);
+    document.getElementById('module-grid').innerHTML = modules.map(m => {
+        const url = MODULE_URLS[m.name] || '#';
+        const isHigh = m.priority === 'high';
+        const badgeStyle = isHigh ? 'background:#fef3c7;color:#92400e;border:1px solid #fcd34d;' : 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;';
+        const badgeLabel = isHigh ? '&#9733; TOP PRIORITY' : 'Recommended';
+        return `<a href="${url}" target="_blank" rel="noopener" style="background:#fff;border:1px solid ${isHigh ? '#fcd34d' : '#e2e8f0'};border-radius:10px;padding:18px;display:block;text-decoration:none;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
+            <div style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;border-radius:20px;padding:3px 8px;margin-bottom:10px;${badgeStyle}">${badgeLabel}</div>
+            <div style="font-size:14px;font-weight:700;color:#0d1f4e;margin-bottom:6px;">${m.name} <span style="font-size:11px;color:#cbd5e1;">&#8599;</span></div>
+            <div style="font-size:12px;color:#6b7a99;line-height:1.5;">${m.desc}</div>
+        </a>`;
+    }).join('');
+
+    setEl('score-from-label',  youPct + '');
+    setEl('score-to-label',    netchexPct + '+');
+    setEl('score-today-label', youPct + '');
+    setEl('score-netchex-label', netchexPct + '+');
+    setEl('score-impact-text', `Deploying these modules puts ${answers.prospectCompany || 'this company'} at ${netchexPct}+ on the Readiness Score — the ${ind.name} customer average — unlocking 10+ capabilities vs. their current setup.`);
+
+    // Narrative
+    const narrativeHtml = buildNarrative(scores, dollars);
+    const totalBanner = dollars.total > 0
+        ? `<div style="display:flex;align-items:center;justify-content:space-between;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 18px;margin-bottom:20px;"><span style="font-size:13px;font-weight:600;color:#1E40AF;">&#128181; Total estimated annual opportunity</span><span style="font-size:22px;font-weight:800;color:#16A34A;">${fmt(dollars.total)}</span></div>`
+        : '';
+    setHtml('narrative-box', totalBanner + narrativeHtml);
+    setEl('success-industry-label', `Benchmarked against ${ind.name} companies on Netchex. These outcomes are consistent, not aspirational.`);
+    const outcomes = [
+        { icon:'&#128188;', label:'HR Admin Saved',       val:bmData.time + ' saved vs. today',   color:'#2563eb' },
+        { icon:'&#128112;', label:'Turnover Reduction',   val:'Reduce exits to ' + bmData.turnover + ' turnover', color:'#dc2626' },
+        { icon:'&#9200;',   label:'Payroll Run Time',     val:'Run payroll in 15 minutes',          color:'#d97706' },
+        { icon:'&#127919;', label:'Readiness Score',      val:'Reach ' + netchexPct + '+ Readiness', color:'#1a8c4e' },
+        { icon:'&#128176;', label:'Annual Savings',       val:fmt(dollars.total) + ' recovered',   color:'#059669' },
+        { icon:'&#9989;',   label:'Customer Benchmark',   val:bmData.fact,                          color:'#7c3aed' },
+    ];
+    setHtml('success-outcomes', outcomes.map(o =>
+        `<div style="display:flex;align-items:center;gap:14px;background:#f8fafb;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;">
+            <div style="font-size:24px;line-height:1;">${o.icon}</div>
+            <div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#6b7a99;margin-bottom:2px;">${o.label}</div>
+            <div style="font-size:14px;font-weight:700;color:#0d1f4e;">${o.val}</div></div>
+        </div>`
+    ).join(''));
+
+    // Investment section
+    buildInvestmentSection(scores, dollars);
+
+    // Savings breakdown table
+    const breakdownEl = document.getElementById('savings-breakdown-table');
+    if (breakdownEl) {
+        const allRows = [
+            { label:'Turnover cost reduction',     val:dollars.turnoverOpportunity,     color:'#dc2626' },
+            { label:'Overtime & payroll savings',  val:dollars.otOpportunity,           color:'#d97706' },
+            { label:'Admin time recovered',        val:dollars.adminOpportunity,        color:'#2563eb' },
+            { label:'Compliance risk avoided',     val:dollars.compOpportunity,         color:'#7c3aed' },
+            { label:'Payroll error corrections',   val:dollars.payrollErrorCost,        color:'#e11d48' },
+            { label:'Report overhead',             val:dollars.reportOverheadCost,      color:'#0891b2' },
+            { label:'Recognition gap (turnover)',  val:dollars.recognitionTurnoverCost, color:'#be185d' },
+            { label:'EWA early-tenure exits',      val:dollars.ewaGapCost,              color:'#b45309' },
+            { label:'Onboarding time cost',        val:dollars.onboardingTimeCost,      color:'#15803d' },
+            { label:'Open role productivity loss', val:dollars.openRoleCost,            color:'#7c2d12' },
+            { label:'ACA compliance exposure',     val:dollars.acaExposure,             color:'#6d28d9' },
+            { label:'Time fraud / FLSA exposure',  val:dollars.timeFraudCost,           color:'#0f766e' },
+        ];
+        const rows = allRows.filter(r => r.val > 0);
+        breakdownEl.innerHTML = rows.map(r =>
+            `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f1f5f9;">
+                <div style="display:flex;align-items:center;gap:10px;"><div style="width:3px;height:24px;border-radius:2px;background:${r.color};flex-shrink:0;"></div><span style="font-size:13px;color:#374151;">${r.label}</span></div>
+                <span style="font-size:16px;font-weight:700;color:#0d1f4e;">${fmt(r.val)}<span style="font-size:11px;font-weight:400;color:#94a3b8;">/yr</span></span>
+            </div>`
+        ).join('') +
+        `<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;"><span style="font-size:14px;font-weight:700;color:#0d1f4e;">Total Estimated Annual Savings</span><span style="font-size:22px;font-weight:800;color:#1a8c4e;">${fmt(dollars.total)}</span></div>`;
+    }
+
+    // AE context grid
+    const contextEl = document.getElementById('ae-context-grid');
+    if (contextEl) {
+        const contextItems = [
+            { label:'Prospect Company',    val: answers.prospectCompany || '—' },
+            { label:'Prospect Contact',    val: answers.prospectContact  || '—' },
+            { label:'Current HCM Vendor',  val: answers.currentVendor    || '—' },
+            { label:'Contract Status',     val: answers.contractStatus   || '—' },
+            { label:'Annual Revenue',      val: answers.annualRevenue    || '—' },
+            { label:'Current HCM Spend',   val: answers.currentSpend     || '—' },
+            { label:'Deal Urgency',        val: answers.dealUrgency      || '—' },
+            { label:'Employee Count',      val: answers.employeeCount    || '—' },
+            { label:'Industry',            val: ind.name },
+        ];
+        contextEl.innerHTML = contextItems.map(c =>
+            `<div style="background:#f8fafb;border:1px solid #e2e8f0;border-radius:8px;padding:14px 16px;">
+                <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:4px;">${c.label}</div>
+                <div style="font-size:14px;font-weight:600;color:#0d1f4e;">${c.val}</div>
+            </div>`
+        ).join('');
+    }
+
+    // Footer
+    setEl('cta-savings-headline', fmt(dollars.total));
+    setEl('results-footer-industry', `netchex.com · ${ind.name} · AE Internal Tool`);
+    setEl('footer-date', new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }));
+
+    // PDF data
+    pdfData = {
+        scores: { ...scores },
+        dollars: { ...dollars },
+        answers: { ...answers },
+        narrative: narrativeHtml,
+        modules: modules.map(m => ({ name:m.name, desc:m.desc, priority:m.priority })),
+        grade: gradeEl.textContent,
+        gradeClass: scores.composite >= 70 ? 'high' : scores.composite >= 50 ? 'mid' : 'low',
+        bmNote: document.getElementById('at-benchmark-callout').innerHTML,
+        indName: ind.name,
+        indAvg: ind.indexAvg,
+        netchexAvg: netchexPct,
+        pillarDescs: pillarDescs,
+        pillarDollarMap: {
+            saveDollars:     dollars.otOpportunity      || 0,
+            saveTime:        dollars.adminOpportunity    || 0,
+            driveEngagement: dollars.turnoverOpportunity || 0,
+            reduceRisk:      dollars.compOpportunity     || 0,
+        },
+        pillarHowText: {
+            saveDollars:     howText('saveDollars'),
+            saveTime:        howText('saveTime'),
+            driveEngagement: howText('driveEngagement'),
+            reduceRisk:      howText('reduceRisk'),
+        },
+        prospectCompany: answers.prospectCompany,
+        prospectContact: answers.prospectContact,
+        currentVendor:   answers.currentVendor,
+        currentSpend:    answers.currentSpend,
+        dealUrgency:     answers.dealUrgency,
+        contractStatus:  answers.contractStatus,
+        annualRevenue:   answers.annualRevenue,
+    };
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PDF GENERATION
+════════════════════════════════════════════════════════════════ */
+const PDF_SERVICE_URL = '';
+
+async function generateProposalPdf() {
+    const overlay     = document.getElementById('pdf-loading-overlay');
+    const progressBar = document.getElementById('pdf-progress-bar');
+    const prospectName = (answers.prospectCompany || 'Prospect').replace(/[^a-zA-Z0-9\s]/g,'').replace(/\s+/g,'-');
+    const filename = 'Netchex-PPRS-' + prospectName + '-Proposal.pdf';
+
+    const proposalServiceUrl = PDF_SERVICE_URL
+        ? PDF_SERVICE_URL.replace('/generate-pdf','/generate-proposal').replace(/\/generate-pdf$/,'/generate-proposal')
+        : '';
+
+    if (!proposalServiceUrl) { window.print(); return; }
+
+    if (overlay) {
+        overlay.style.display = 'flex';
+        progressBar.style.width = '0%';
+        let pct = 0;
+        const interval = setInterval(() => {
+            if (pct < 85) { pct += (85 - pct) * 0.06; progressBar.style.width = pct.toFixed(1) + '%'; }
+        }, 400);
+        overlay._interval = interval;
+    }
+
+    try {
+        const proposalPayload = { ...pdfData };
+        const response = await fetch(proposalServiceUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(proposalPayload),
+        });
+        if (!response.ok) throw new Error('Service returned ' + response.status);
+        const blob = await response.blob();
+        const url  = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('[proposal] generation failed:', err);
+        window.print();
+    } finally {
+        if (overlay) {
+            clearInterval(overlay._interval);
+            progressBar.style.width = '100%';
+            setTimeout(() => { overlay.style.display = 'none'; progressBar.style.width = '0%'; }, 500);
+        }
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   EVENT BINDINGS
+════════════════════════════════════════════════════════════════ */
+// Choice cards
+document.querySelectorAll('.choice-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+        selectChoice(this, this.dataset.field, this.dataset.value);
+    });
+});
+
+// Tag pills
+document.getElementById('tag-grid')?.addEventListener('click', function(e) {
+    const pill = e.target.closest('.tag-pill');
+    if (pill) toggleTag(pill, pill.dataset.tag);
+});
+
+// Back buttons
+document.getElementById('q1-back')?.addEventListener('click', function() { showScreen('screen-ae-discovery'); });
+for (let i = 2; i <= 22; i++) {
+    (function(n) {
+        const btn = document.getElementById('q' + n + '-back');
+        if (btn) btn.addEventListener('click', goBack);
+    })(i);
+}
+
+// Next (slider questions)
+document.getElementById('q6-next')?.addEventListener('click', goNext);
+document.getElementById('q8-next')?.addEventListener('click', goNext);
+document.getElementById('q9-next')?.addEventListener('click', goNext);
+
+// Generate
+document.getElementById('btn-generate')?.addEventListener('click', function() {
+    const textEl = document.getElementById('q22-text');
+    if (textEl) answers.topProblemText = textEl.value.trim();
+    generateReport();
+});
+
+// Sliders
+document.getElementById('q6-slider')?.addEventListener('input', function() { updateSlider('q6','overtimePercent',this.value); });
+document.getElementById('q8-slider')?.addEventListener('input', function() { updateSlider('q8','adminHours',this.value); });
+document.getElementById('q9-slider')?.addEventListener('input', function() { updateSlider('q9','turnoverRate',this.value); });
+
+// Q22 textarea
+document.getElementById('q22-text')?.addEventListener('input', function() { answers.topProblemText = this.value; });
+
+// Initialize slider displays
+['q6','q8','q9'].forEach(id => {
+    const slider = document.getElementById(id + '-slider');
+    if (slider) slider.dispatchEvent(new Event('input'));
+});
+
+// Allow Enter in password field (already handled by onkeydown, this is a fallback)
+document.getElementById('pw-input')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkPassword();
+});
+
+} // end quizInit
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', quizInit);
+} else {
+    quizInit();
+}
+</script>
+</body>
+</html>
