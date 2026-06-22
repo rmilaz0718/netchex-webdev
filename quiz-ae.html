@@ -459,12 +459,13 @@
                 </div>
                 <div class="flex justify-between mb-2 text-xs text-gray-400"><span>0%</span><span>35%+</span></div>
                 <input type="range" id="q6-slider" min="0" max="35" value="0" class="!py-0">
+                <label class="flex items-center gap-2.5 mt-4 cursor-pointer lead--small text-gray-500 w-max">
+                    <input type="checkbox" class="w-4 h-4 accent-blue-600" id="q6-idk">
+                    I don&#8217;t know &#8212; use industry average
+                </label>
             </div>
             <div class="flex items-center justify-between pt-5 border-t border-gray-200">
-                <div style="display:flex;align-items:center;gap:16px;">
-                    <button id="q6-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
-                    <button onclick="useIndustryAvg('q6','overtimePercent')" style="background:none;border:none;font-size:12px;color:#94a3b8;cursor:pointer;padding:0;text-decoration:underline;font-family:Inter,sans-serif;" title="Uses industry average for this field">I don&#8217;t know</button>
-                </div>
+                <button id="q6-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
                 <button id="q6-next" class="btn btn--primary" disabled style="opacity:0.4;cursor:not-allowed">Next &#8594;</button>
             </div>
         </div>
@@ -496,12 +497,13 @@
                 </div>
                 <div class="flex justify-between mb-2 text-xs text-gray-400"><span>2 hrs/wk</span><span>40 hrs/wk+</span></div>
                 <input type="range" id="q8-slider" min="0" max="40" value="0" class="!py-0">
+                <label class="flex items-center gap-2.5 mt-4 cursor-pointer lead--small text-gray-500 w-max">
+                    <input type="checkbox" class="w-4 h-4 accent-blue-600" id="q8-idk">
+                    I don&#8217;t know &#8212; use industry average
+                </label>
             </div>
             <div class="flex items-center justify-between pt-5 border-t border-gray-200">
-                <div style="display:flex;align-items:center;gap:16px;">
-                    <button id="q8-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
-                    <button onclick="useIndustryAvg('q8','adminHours')" style="background:none;border:none;font-size:12px;color:#94a3b8;cursor:pointer;padding:0;text-decoration:underline;font-family:Inter,sans-serif;" title="Uses industry average for this field">I don&#8217;t know</button>
-                </div>
+                <button id="q8-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
                 <button id="q8-next" class="btn btn--primary" disabled style="opacity:0.4;cursor:not-allowed">Next &#8594;</button>
             </div>
         </div>
@@ -517,12 +519,13 @@
                 </div>
                 <div class="flex justify-between mb-2 text-xs text-gray-400"><span>0%</span><span>150%+</span></div>
                 <input type="range" id="q9-slider" min="0" max="150" value="0" class="!py-0">
+                <label class="flex items-center gap-2.5 mt-4 cursor-pointer lead--small text-gray-500 w-max">
+                    <input type="checkbox" class="w-4 h-4 accent-blue-600" id="q9-idk">
+                    I don&#8217;t know &#8212; use industry average
+                </label>
             </div>
             <div class="flex items-center justify-between pt-5 border-t border-gray-200">
-                <div style="display:flex;align-items:center;gap:16px;">
-                    <button id="q9-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
-                    <button onclick="useIndustryAvg('q9','turnoverRate')" style="background:none;border:none;font-size:12px;color:#94a3b8;cursor:pointer;padding:0;text-decoration:underline;font-family:Inter,sans-serif;" title="Uses industry average for this field">I don&#8217;t know</button>
-                </div>
+                <button id="q9-back" class="bg-transparent border-0 text-gray-400 text-sm font-medium cursor-pointer py-2 flex items-center gap-1.5 hover:text-gray-500">&#8592; Back</button>
                 <button id="q9-next" class="btn btn--primary" disabled style="opacity:0.4;cursor:not-allowed">Next &#8594;</button>
             </div>
         </div>
@@ -1389,6 +1392,11 @@ function selectChoice(el, field, value) {
             ['q6','q8','q9'].forEach(qId => {
                 const nb = document.getElementById(qId + '-next');
                 if (nb) { nb.disabled = true; nb.style.opacity = '0.4'; nb.style.cursor = 'not-allowed'; }
+                // reset IDK checkbox and re-enable slider
+                const cb = document.getElementById(qId + '-idk');
+                const sl = document.getElementById(qId + '-slider');
+                if (cb) cb.checked = false;
+                if (sl) { sl.disabled = false; sl.style.opacity = '1'; }
             });
             const intEl = document.getElementById('q20-integrations');
             if (intEl && INDUSTRY_INTEGRATIONS[value]) intEl.textContent = INDUSTRY_INTEGRATIONS[value];
@@ -1399,20 +1407,24 @@ function selectChoice(el, field, value) {
     }, 380);
 }
 
-/* ── INDUSTRY AVG SKIP (I don't know) ── */
-function useIndustryAvg(qId, field) {
-    const ind = INDUSTRY_DATA[answers.industry] || INDUSTRY_DATA.other;
-    let val;
-    if (field === 'overtimePercent') val = ind.overtime;
-    else if (field === 'adminHours') val = ind.adminHours;
-    else if (field === 'turnoverRate') val = ind.turnover;
-    else return;
-    setSlider(qId, val);
-    answers[field] = val;
-    // Enable next button and advance
+/* ── INDUSTRY AVG (I don't know checkbox) ── */
+function toggleIdk(qId, field, industryVal) {
+    const cb     = document.getElementById(qId + '-idk');
+    const slider = document.getElementById(qId + '-slider');
+    const valEl  = document.getElementById(qId + '-val');
     const nextBtn = document.getElementById(qId + '-next');
-    if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = '1'; nextBtn.style.cursor = 'pointer'; }
-    setTimeout(() => goNext(), 120);
+    if (cb.checked) {
+        slider.disabled = true;
+        slider.style.opacity = '0.4';
+        answers[field] = industryVal;
+        if (valEl) valEl.textContent = industryVal;
+        slider.value = industryVal;
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = '1'; nextBtn.style.cursor = 'pointer'; }
+    } else {
+        slider.disabled = false;
+        slider.style.opacity = '1';
+        if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = '0.4'; nextBtn.style.cursor = 'not-allowed'; }
+    }
 }
 
 /* ── SLIDERS (no IDK in AE mode) ── */
@@ -2202,6 +2214,20 @@ document.getElementById('btn-generate')?.addEventListener('click', function() {
 document.getElementById('q6-slider')?.addEventListener('input', function() { updateSlider('q6','overtimePercent',this.value); });
 document.getElementById('q8-slider')?.addEventListener('input', function() { updateSlider('q8','adminHours',this.value); });
 document.getElementById('q9-slider')?.addEventListener('input', function() { updateSlider('q9','turnoverRate',this.value); });
+
+// IDK checkboxes — use the selected industry's benchmark values
+document.getElementById('q6-idk')?.addEventListener('change', function() {
+    const ind = INDUSTRY_DATA[answers.industry] || INDUSTRY_DATA.other;
+    toggleIdk('q6', 'overtimePercent', ind.overtime);
+});
+document.getElementById('q8-idk')?.addEventListener('change', function() {
+    const ind = INDUSTRY_DATA[answers.industry] || INDUSTRY_DATA.other;
+    toggleIdk('q8', 'adminHours', ind.adminHours);
+});
+document.getElementById('q9-idk')?.addEventListener('change', function() {
+    const ind = INDUSTRY_DATA[answers.industry] || INDUSTRY_DATA.other;
+    toggleIdk('q9', 'turnoverRate', ind.turnover);
+});
 
 // Q22 textarea
 document.getElementById('q22-text')?.addEventListener('input', function() { answers.topProblemText = this.value; });
